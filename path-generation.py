@@ -20,8 +20,8 @@ class Point:
     y: int
 
 
-SlotPosition = Literal['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
-AVAILABLE_SLOTS: SlotPosition = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
+SlotPosition = Literal['S1', 'S2', 'S3', 'S4', 'S5']
+AVAILABLE_SLOTS: list[SlotPosition] = ['S1', 'S2', 'S3', 'S4', 'S5']
 
 
 def generate_combinations(paths_reminder: tuple) -> list[list[tuple[str, SlotPosition]]]:
@@ -41,11 +41,20 @@ def generate_combinations(paths_reminder: tuple) -> list[list[tuple[str, SlotPos
 
 def main():
     # List of paths for each flow, each path is a list of stations
+    # paths = [
+    #     ('Ams', 'Bos', 'Chi', 'Den', 'Eri',),
+    #     ('Ams', 'Bos', 'Chi'),
+    #     ('Ams', 'Bos', 'Pen'),
+    #     ('Ams', 'Kus')
+    # ]
+
     paths = [
-        ('Ams', 'Bos', 'Chi', 'Den', 'Eri',),
-        ('Ams', 'Bos', 'Chi'),
-        ('Ams', 'Bos', 'Pen'),
-        ('Ams', 'Kus')
+        ('Root', 'A', 'C'),
+        ('Root', 'A', 'C', 'F', 'G'),
+        ('Root', 'A', 'C', 'F', 'H'),
+        ('Root', 'B'),
+        ('Root', 'D', 'E'),
+        ('Root', 'D', 'G', 'F')
     ]
 
     # Variant A: Starting slot is same as ending slot
@@ -53,7 +62,7 @@ def main():
     generated_paths = {}
     for path in paths:
         generated_paths[path] = []
-        for slot in ['A', 'B', 'C', 'D', 'E']:
+        for slot in AVAILABLE_SLOTS:
             path_with_slots = []
             for station in path:
                 path_with_slots.append((station, slot))
@@ -70,6 +79,8 @@ def main():
     with open("assets/generated-path.pkl", "rb") as f:
         loaded_paths = pickle.load(f)
         assert loaded_paths == generated_paths  # Check if the loaded paths are the same as the generated paths
+
+    print(loaded_paths)
 
     # Variant B: Starting slot is might different from ending slot
     # Generate all possible paths from the start to the end for each slot at given station

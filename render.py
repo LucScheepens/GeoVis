@@ -3,17 +3,39 @@ import pandas as pd
 from pydeck import View, ViewState
 from pydeck.types import String
 
+STATIONS = [
+    [0, 0, 'Amsterdam'],  # Point 1
+    [10, 10, 'Bosssing'],  # Point 2
+    [20, 10, 'Chiki'],  # Point 3
+]
 
-def renderStations() -> [pdk.Layer]:
-    # Define a text layer for the station labels
-    coordinates = [
-        [0, 0, 'Amsterdam'],  # Point 1
-        [10, 10, 'Bosssing'],  # Point 2
-        [20, 10, 'Chiki'],  # Point 3
-    ]
+PATHS = [
+    {
+        "name": "Richmond - Millbrae",
+        "color": "#ed1c24",
+        "width": 1,
+        "path": [
+            [0, 0],  # Point 1
+            [10, 10],  # Point 2
+            [20, 10],  # Point 3
+        ]
+    },
+    {
+        "name": "Richmond - Millbrae2",
+        "color": "#4924ff",
+        "width": 2,
+        "path": [
+            [-2, 2],  # Point 1
+            [10-2, 10+2],  # Point 2
+            [20+2, 10+2],  # Point 3
+        ]
+    }
+]
 
+
+def render_stations() -> [pdk.Layer]:
     # Create a data frame
-    data = pd.DataFrame(coordinates, columns=['x', 'y', 'station'])
+    data = pd.DataFrame(STATIONS, columns=['x', 'y', 'station'])
 
     return [
         pdk.Layer(
@@ -45,31 +67,9 @@ def hex_to_rgb(h):
 
 def main():
     # Define a list of coordinates for the tube line
-    paths = [
-        {
-            "name": "Richmond - Millbrae",
-            "color": "#ed1c24",
-            "width": 1,
-            "path": [
-                [0, 0],  # Point 1
-                [10, 10],  # Point 2
-                [20, 10],  # Point 3
-            ]
-        },
-        {
-            "name": "Richmond - Millbrae2",
-            "color": "#4924ff",
-            "width": 1,
-            "path": [
-                [-2, 2],  # Point 1
-                [10-2, 10+2],  # Point 2
-                [20+2, 10+2],  # Point 3
-            ]
-        }
-    ]
 
     # Create a data frame
-    df = pd.DataFrame.from_records(paths)
+    df = pd.DataFrame.from_records(PATHS)
     df["color"] = df["color"].apply(hex_to_rgb)
 
     # DATA_URL = "https://raw.githubusercontent.com/visgl/deck.gl-data/master/website/bart-lines.json"
@@ -92,7 +92,7 @@ def main():
     view_state = ViewState(target=[0, 0, 0], zoom=2)
 
     # Render the deck
-    [stations_circle, stations_text] = renderStations()
+    [stations_circle, stations_text] = render_stations()
     # view_state = pdk.ViewState(latitude=37.782556, longitude=-122.3484867, zoom=10)
 
     view = View(
@@ -109,4 +109,24 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+
+    points = ['A', 'B', 'C', 'D']
+
+    all_pairs = []
+    pairs = []
+    for i in range(len(points)):
+        for j in range(i + 1, len(points)):
+            pairs.append((f"{points[i]}1", f"{points[j]}1"))
+            pairs.append((f"{points[i]}1", f"{points[j]}2"))
+
+        for j in range(i + 1, len(points)):
+            pairs.append((f"{points[i]}2", f"{points[j]}1"))
+            pairs.append((f"{points[i]}2", f"{points[j]}2"))
+
+        print(f"{pairs} => {len(pairs)}")
+        all_pairs += pairs
+        pairs = []
+
+    print("Total pairs:", len(all_pairs))
+    print("Pairs:", all_pairs)

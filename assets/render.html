@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <title>pydeck</title>
+        <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.13.0/mapbox-gl.js"></script>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" />
+    <script src='https://cdn.jsdelivr.net/npm/@deck.gl/jupyter-widget@~8.8.*/dist/index.js'></script>
+    <style>
+    body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+#deck-container {
+  width: 100vw;
+  height: 100vh;
+}
+
+#deck-container canvas {
+  z-index: 1;
+  background: none;
+}
+    </style>
+  </head>
+  <body>
+    <div id="deck-container">
+    </div>
+  </body>
+  <script>
+    const container = document.getElementById('deck-container');
+    const jsonInput = {
+  "initialViewState": {
+    "target": [
+      0,
+      0,
+      0
+    ],
+    "zoom": 2
+  },
+  "layers": [
+    {
+      "@@type": "PathLayer",
+      "data": [
+        {
+          "color": [
+            237,
+            28,
+            36
+          ],
+          "name": "Richmond - Millbrae",
+          "path": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              20,
+              10
+            ]
+          ],
+          "width": 1
+        },
+        {
+          "color": [
+            73,
+            36,
+            255
+          ],
+          "name": "Richmond - Millbrae2",
+          "path": [
+            [
+              -2,
+              2
+            ],
+            [
+              8,
+              12
+            ],
+            [
+              22,
+              12
+            ]
+          ],
+          "width": 2
+        }
+      ],
+      "getColor": "@@=color",
+      "getWidth": "@@=width",
+      "id": "ad706f77-f975-4a30-bde0-e83a8628b76c",
+      "pickable": true,
+      "widthMaxPixels": "@@=width",
+      "widthMinPixels": "@@=width",
+      "widthUnit": "pixels"
+    },
+    {
+      "@@type": "ScatterplotLayer",
+      "data": [
+        {
+          "station": "Amsterdam",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "station": "Bosssing",
+          "x": 10,
+          "y": 10
+        },
+        {
+          "station": "Chiki",
+          "x": 20,
+          "y": 10
+        }
+      ],
+      "getFillColor": [
+        255,
+        255,
+        0
+      ],
+      "getPosition": "@@=[x, y]",
+      "getRadius": 0.5,
+      "id": "b715ee5a-f5f6-40b3-b7b7-c023e1a11750",
+      "pickable": true
+    },
+    {
+      "@@type": "TextLayer",
+      "data": [
+        {
+          "station": "Amsterdam",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "station": "Bosssing",
+          "x": 10,
+          "y": 10
+        },
+        {
+          "station": "Chiki",
+          "x": 20,
+          "y": 10
+        }
+      ],
+      "getAlignmentBaseline": "center",
+      "getAngle": 0,
+      "getColor": [
+        0,
+        0,
+        0,
+        255
+      ],
+      "getPosition": "@@=[x, y]",
+      "getSize": 12,
+      "getText": "@@=station",
+      "getTextAnchor": "middle",
+      "id": "890ef884-a20c-4e4f-8a46-acbc1d2d0571"
+    }
+  ],
+  "mapStyle": "dark",
+  "views": [
+    {
+      "@@type": "OrthographicView",
+      "controller": true
+    }
+  ]
+};
+    const tooltip = true;
+    const customLibraries = null;
+    const configuration = null;
+
+    const deckInstance = createDeck({
+                  container,
+      jsonInput,
+      tooltip,
+      customLibraries,
+      configuration
+    });
+
+  </script>
+</html>
