@@ -1,27 +1,13 @@
-import dataclasses
 import pickle
 from typing import Literal
 
-
-class PathUtils:
-    @staticmethod
-    def ccw(A: 'Point', B: 'Point', C: 'Point'):
-        return (C.y - A.y) * (B.x - A.x) > (B.y - A.y) * (C.x - A.x)
-
-    # Return true if line segments AB and CD intersect
-    @classmethod
-    def intersect(cls, A: 'Point', B: 'Point', C: 'Point', D: 'Point'):
-        return cls.ccw(A, C, D) != cls.ccw(B, C, D) and cls.ccw(A, B, C) != cls.ccw(A, B, D)
+SlotPosition = Literal['S1', 'S2', 'S3', 'S4', 'S5']
+AVAILABLE_SLOTS: list[SlotPosition] = ['S1', 'S2', 'S3', 'S4', 'S5']
 
 
-@dataclasses.dataclass
-class Point:
-    x: int
-    y: int
-
-
-SlotPosition = Literal['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
-AVAILABLE_SLOTS: SlotPosition = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
+def load_paths() -> dict[tuple[SlotPosition, ...], list[list[tuple[str, SlotPosition]]]]:
+    with open("assets/generated-path.pkl", "rb") as f:
+        return pickle.load(f)
 
 
 def generate_combinations(paths_reminder: tuple) -> list[list[tuple[str, SlotPosition]]]:
@@ -40,12 +26,13 @@ def generate_combinations(paths_reminder: tuple) -> list[list[tuple[str, SlotPos
 
 
 def main():
-    # List of paths for each flow, each path is a list of stations
     paths = [
-        ('Ams', 'Bos', 'Chi', 'Den', 'Eri',),
-        ('Ams', 'Bos', 'Chi'),
-        ('Ams', 'Bos', 'Pen'),
-        ('Ams', 'Kus')
+        ('Root', 'A', 'C'),
+        ('Root', 'A', 'C', 'F', 'G'),
+        ('Root', 'A', 'C', 'F', 'H'),
+        ('Root', 'B'),
+        ('Root', 'D', 'E'),
+        ('Root', 'D', 'G', 'F')
     ]
 
     # Variant A: Starting slot is same as ending slot
@@ -53,7 +40,7 @@ def main():
     generated_paths = {}
     for path in paths:
         generated_paths[path] = []
-        for slot in ['A', 'B', 'C', 'D', 'E']:
+        for slot in AVAILABLE_SLOTS:
             path_with_slots = []
             for station in path:
                 path_with_slots.append((station, slot))
@@ -67,9 +54,13 @@ def main():
         pickle.dump(generated_paths, f)
         print("💾 Generated paths are saved to assets/generated-path.pkl")
 
-    with open("assets/generated-path.pkl", "rb") as f:
-        loaded_paths = pickle.load(f)
-        assert loaded_paths == generated_paths  # Check if the loaded paths are the same as the generated paths
+    loaded_paths = load_paths()
+    assert loaded_paths == generated_paths  # Check if the loaded paths are the same as the generated paths
+
+    print(loaded_paths)
+    x = set()
+    x += set()
+
 
     # Variant B: Starting slot is might different from ending slot
     # Generate all possible paths from the start to the end for each slot at given station
