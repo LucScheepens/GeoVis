@@ -1,6 +1,24 @@
+from path_generation import *
+
+class Station:
+    def __init__(self, name, x, y) -> None:
+        self.name = name 
+        self.coordinates = (x,y)
+        self.slots = self.create_slots(x,y)
+    
+    def create_slots(x,y, d = 1):
+        coordinates = [
+            (x + d, y + d),
+            (x + d, y - d),
+            (x - d, y + d),
+            (x - d, y - d)
+        ]
+        return coordinates
+
+
 class Node:
-    def __init__(self, data):
-        self.data = data
+    def __init__(self, list_of_Station, slots):
+        self.all_stations = list_of_Station
         self.children = []
 
     def add_child(self, child):
@@ -22,3 +40,5 @@ class Node:
     def cost(self):
         pass
     
+    def generate_path(self):
+        pass
