@@ -1,7 +1,25 @@
+import dataclasses
+import random
+
 import pydeck as pdk
 import pandas as pd
 from pydeck import View, ViewState
 from pydeck.types import String
+
+@dataclasses.dataclass
+class Point:
+    x: float
+    y: float
+
+def path_template(name: str, points: [Point]) -> dict:
+    color = "%06x" % random.randint(0, 0xFFFFFF)
+    return {
+        "name": name,
+        "color": str(color),
+        "width": random.randint(1, 3),
+        "path": [[point.x, point.y] for point in points]
+    }
+
 
 STATIONS = [
     [0, 0, 'Amsterdam'],  # Point 1
@@ -9,28 +27,14 @@ STATIONS = [
     [20, 10, 'Chiki'],  # Point 3
 ]
 
-PATHS = [
-    {
-        "name": "Richmond - Millbrae",
-        "color": "#ed1c24",
-        "width": 1,
-        "path": [
-            [0, 0],  # Point 1
-            [10, 10],  # Point 2
-            [20, 10],  # Point 3
-        ]
-    },
-    {
-        "name": "Richmond - Millbrae2",
-        "color": "#4924ff",
-        "width": 2,
-        "path": [
-            [-2, 2],  # Point 1
-            [10-2, 10+2],  # Point 2
-            [20+2, 10+2],  # Point 3
-        ]
-    }
-]
+# DIJKSTRA_OUTPUT = [
+#     [Point(x=-1, y=1), Point(x=9, y=11), Point(x=19, y=21), Point(x=29, y=31), Point(x=39, y=41)],
+#     [Point(x=1, y=1), Point(x=11, y=11), Point(x=21, y=21), Point(x=31, y=31), Point(x=51, y=51)],
+#     [Point(x=0, y=0), Point(x=10, y=10), Point(x=20, y=20)],
+# ]
+# DIJKSTRA_OUTPUT = [[Point(x=0, y=0), Point(x=10, y=10), Point(x=20, y=20)], [Point(x=-1, y=1), Point(x=9, y=11), Point(x=19, y=21), Point(x=29, y=31), Point(x=39, y=41)], [Point(x=1, y=-1), Point(x=11, y=9), Point(x=21, y=19), Point(x=31, y=29), Point(x=51, y=49)]]
+DIJKSTRA_OUTPUT = [[Point(x=0, y=0), Point(x=10, y=10), Point(x=20, y=20)], [Point(x=-1, y=1), Point(x=9, y=11), Point(x=19, y=21), Point(x=29, y=31), Point(x=39, y=41)], [Point(x=1, y=-1), Point(x=11, y=9), Point(x=21, y=19), Point(x=31, y=29), Point(x=51, y=49)]]
+PATHS = [path_template(str(i), path) for i, path in enumerate(DIJKSTRA_OUTPUT)]
 
 
 def render_stations() -> [pdk.Layer]:
@@ -109,24 +113,24 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
+    main()
 
-    points = ['A', 'B', 'C', 'D']
-
-    all_pairs = []
-    pairs = []
-    for i in range(len(points)):
-        for j in range(i + 1, len(points)):
-            pairs.append((f"{points[i]}1", f"{points[j]}1"))
-            pairs.append((f"{points[i]}1", f"{points[j]}2"))
-
-        for j in range(i + 1, len(points)):
-            pairs.append((f"{points[i]}2", f"{points[j]}1"))
-            pairs.append((f"{points[i]}2", f"{points[j]}2"))
-
-        print(f"{pairs} => {len(pairs)}")
-        all_pairs += pairs
-        pairs = []
-
-    print("Total pairs:", len(all_pairs))
-    print("Pairs:", all_pairs)
+    # points = ['A', 'B', 'C', 'D']
+    #
+    # all_pairs = []
+    # pairs = []
+    # for i in range(len(points)):
+    #     for j in range(i + 1, len(points)):
+    #         pairs.append((f"{points[i]}1", f"{points[j]}1"))
+    #         pairs.append((f"{points[i]}1", f"{points[j]}2"))
+    #
+    #     for j in range(i + 1, len(points)):
+    #         pairs.append((f"{points[i]}2", f"{points[j]}1"))
+    #         pairs.append((f"{points[i]}2", f"{points[j]}2"))
+    #
+    #     print(f"{pairs} => {len(pairs)}")
+    #     all_pairs += pairs
+    #     pairs = []
+    #
+    # print("Total pairs:", len(all_pairs))
+    # print("Pairs:", all_pairs)
