@@ -2,6 +2,8 @@ import dataclasses
 import pickle
 from itertools import product
 
+from utils import Point
+
 # TODO: Output must include the frequency of each path
 # TODO: Number of slots should be calculated dynamically
 #       => Another objective is to minimize the number of slots?
@@ -9,12 +11,7 @@ from itertools import product
 # TODO: What is the lines overlap? How to calculate it? -> Optimize the path to minimize the overlap
 #  -> E.g. by putting the thick line to side or by changing the slot offset
 
-
-@dataclasses.dataclass
-class Point:
-    x: int
-    y: int
-
+# TODOL: Add input -> path coordinates
 
 SLOT_POSITIONS = ['S1', 'S2', 'S3', 'S4', 'S5']
 NODE_COORDINATES = {

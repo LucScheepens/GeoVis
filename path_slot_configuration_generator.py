@@ -2,8 +2,7 @@ import pathlib
 import pickle
 from typing import Literal, Union, List, Tuple
 
-SlotPosition = str
-AVAILABLE_SLOTS: list[str] = ["S1", "S2", "S3", "S4", "S5"]
+from utils import SlotPosition, AVAILABLE_SLOTS
 
 
 def load_paths() -> dict[tuple[SlotPosition, ...], list[list[tuple[str, SlotPosition]]]]:
@@ -11,14 +10,14 @@ def load_paths() -> dict[tuple[SlotPosition, ...], list[list[tuple[str, SlotPosi
         return pickle.load(f)
 
 
-def generate_combinations(paths_reminder: tuple) -> list[list[tuple[str, SlotPosition]]]:
+def generate_combinations_variant_b(paths_reminder: tuple) -> list[list[tuple[str, SlotPosition]]]:
     if not paths_reminder:
         return [[]]
 
     result = []
     current_station_name, new_paths_reminder = paths_reminder[0], paths_reminder[1:]
     for slot in AVAILABLE_SLOTS:
-        reminder = generate_combinations(new_paths_reminder)
+        reminder = generate_combinations_variant_b(new_paths_reminder)
         result.extend([
             [(current_station_name, slot)] + r for r in reminder
         ])
@@ -26,7 +25,7 @@ def generate_combinations(paths_reminder: tuple) -> list[list[tuple[str, SlotPos
     return result
 
 
-def generate_paths(paths: list[Union[tuple[str, ...], list[str, ...]]]):
+def generate_configuration(paths: list[Union[tuple[str, ...], list[str, ...]]]):
     # Convert the paths to tuple if they are not
     # So we can use them as dictionary keys
     if any(isinstance(path, list) for path in paths):
@@ -34,17 +33,17 @@ def generate_paths(paths: list[Union[tuple[str, ...], list[str, ...]]]):
 
     # Variant A: Starting slot is same as ending slot
     # Generate all possible paths from the start to the end for each slot at given station
-    generated_paths = {}
+    configurations = {}
     for path in paths:
-        generated_paths[path] = []
+        configurations[path] = []
         for slot in AVAILABLE_SLOTS:
             path_with_slots = []
             for station in path:
                 path_with_slots.append((station, slot))
 
-            generated_paths[path].append(path_with_slots)
+            configurations[path].append(path_with_slots)
 
-    return generated_paths
+    return configurations
     # for path, slots in generated_paths.items():
     #     print(f"Path {path}: {slots}")
 
@@ -75,7 +74,7 @@ def main():
         ['Root', 'D', 'G', 'F']
     ]
 
-    generated_paths = generate_paths(paths)
+    generated_paths = generate_configuration(paths)
 
     this_file = pathlib.Path(__file__).resolve().parent
     with open(this_file / "assets/generated-path.pkl", "wb") as f:

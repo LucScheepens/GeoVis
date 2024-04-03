@@ -6,10 +6,8 @@ import pandas as pd
 from pydeck import View, ViewState
 from pydeck.types import String
 
-@dataclasses.dataclass
-class Point:
-    x: float
-    y: float
+from utils import Point
+
 
 def path_template(name: str, points: [Point]) -> dict:
     color = "%06x" % random.randint(0, 0xFFFFFF)
