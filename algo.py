@@ -2,7 +2,8 @@ import dataclasses
 import pickle
 from itertools import product
 
-from utils import Point
+from path_slot_configuration_generator import generate_configuration
+from utils import Point, LayoutAlgorithm, FlowPathsT, LayoutOutput, SLOTS
 
 # TODO: Output must include the frequency of each path
 # TODO: Number of slots should be calculated dynamically
@@ -13,16 +14,16 @@ from utils import Point
 
 # TODOL: Add input -> path coordinates
 
-SLOT_POSITIONS = ['S1', 'S2', 'S3', 'S4', 'S5']
-NODE_COORDINATES = {
-    'Root': Point(0, 0),
-    'A': Point(10, 10),
-    'C': Point(20, 20),
-    'F': Point(30, 30),
-    'G': Point(40, 40),
-    'H': Point(50, 50)
-}
-
+# SLOT_POSITIONS = ['S1', 'S2', 'S3', 'S4', 'S5']
+# NODE_COORDINATES = {
+#     'Root': Point(0, 0),
+#     'A': Point(10, 10),
+#     'C': Point(20, 20),
+#     'F': Point(30, 30),
+#     'G': Point(40, 40),
+#     'H': Point(50, 50)
+# }
+#
 SLOT_OFFSETS = {
     'S1': (0, 0),
     'S2': (-1, 1),
@@ -31,11 +32,11 @@ SLOT_OFFSETS = {
     'S5': (1, -1)
 }
 
-SLOT_COORDINATES = {}
-for node, point in NODE_COORDINATES.items():
-    for slot in SLOT_POSITIONS:
-        offset_x, offset_y = SLOT_OFFSETS[slot]
-        SLOT_COORDINATES[(node, slot)] = Point(point.x + offset_x, point.y + offset_y)
+# SLOT_COORDINATES = {}
+# for node, point in NODE_COORDINATES.items():
+#     for slot in SLOT_POSITIONS:
+#         offset_x, offset_y = SLOT_OFFSETS[slot]
+#         SLOT_COORDINATES[(node, slot)] = Point(point.x + offset_x, point.y + offset_y)
 
 
 def contains_equals(route1, route2):
@@ -59,13 +60,13 @@ def identify_wrong_combos(dot_product):
     return to_reject
 
 
-def combination_to_coordinates(configuration):
+def combination_to_coordinates(configuration, slot_coordinates):
     """Function that translates a combination to their corresponding coordinates"""
     coordinates_for_configuration = []
     for route in configuration:
         coordinates_for_route = []
         for point_on_route in route:
-            coordinates_for_route.append(SLOT_COORDINATES[point_on_route])
+            coordinates_for_route.append(slot_coordinates[point_on_route])
 
         coordinates_for_configuration.append(coordinates_for_route)
 
@@ -127,13 +128,46 @@ def main(path: str = "assets/generated-path.pkl"):
 
     paths = {('Root', 'A', 'C'): [[('Root', 'S1'), ('A', 'S1'), ('C', 'S1')], [('Root', 'S2'), ('A', 'S2'), ('C', 'S2')], [('Root', 'S3'), ('A', 'S3'), ('C', 'S3')], [('Root', 'S4'), ('A', 'S4'), ('C', 'S4')], [('Root', 'S5'), ('A', 'S5'), ('C', 'S5')]], ('Root', 'A', 'C', 'F', 'G'): [[('Root', 'S1'), ('A', 'S1'), ('C', 'S1'), ('F', 'S1'), ('G', 'S1')], [('Root', 'S2'), ('A', 'S2'), ('C', 'S2'), ('F', 'S2'), ('G', 'S2')], [('Root', 'S3'), ('A', 'S3'), ('C', 'S3'), ('F', 'S3'), ('G', 'S3')], [('Root', 'S4'), ('A', 'S4'), ('C', 'S4'), ('F', 'S4'), ('G', 'S4')], [('Root', 'S5'), ('A', 'S5'), ('C', 'S5'), ('F', 'S5'), ('G', 'S5')]], ('Root', 'A', 'C', 'F', 'H'): [[('Root', 'S1'), ('A', 'S1'), ('C', 'S1'), ('F', 'S1'), ('H', 'S1')], [('Root', 'S2'), ('A', 'S2'), ('C', 'S2'), ('F', 'S2'), ('H', 'S2')], [('Root', 'S3'), ('A', 'S3'), ('C', 'S3'), ('F', 'S3'), ('H', 'S3')], [('Root', 'S4'), ('A', 'S4'), ('C', 'S4'), ('F', 'S4'), ('H', 'S4')], [('Root', 'S5'), ('A', 'S5'), ('C', 'S5'), ('F', 'S5'), ('H', 'S5')]]}
 
-    configuration_dot_product = list(product(*paths.values()))
-    wrong_combos = identify_wrong_combos(configuration_dot_product)
+    # configuration_dot_product = list(product(*paths.values()))
+    # wrong_combos = identify_wrong_combos(configuration_dot_product)
+    #
+    # valid_configurations = [element for element in configuration_dot_product if element not in wrong_combos]
+    #
+    # best_combination = sorted(valid_configurations, key=lambda x: count_intersections(combination_to_coordinates(x)))[0]
+    # return combination_to_coordinates(best_combination)
 
-    valid_configurations = [element for element in configuration_dot_product if element not in wrong_combos]
 
-    best_combination = sorted(valid_configurations, key=lambda x: count_intersections(combination_to_coordinates(x)))[0]
-    return combination_to_coordinates(best_combination)
+class DummyAlgorithm(LayoutAlgorithm):
+    @property
+    def name(self) -> str:
+        return "dummy"
+
+    def find_optimal_layout(self, flow_paths: FlowPathsT, stations: dict[str, Point]) -> LayoutOutput:
+        # Generate slot coordinates
+        slot_coordinates = {}
+        for station_name, point in stations.items():
+            for slot in SLOTS:
+                offset_x, offset_y = SLOT_OFFSETS[slot]
+                slot_coordinates[(station_name, slot)] = Point(point.x + offset_x, point.y + offset_y)
+
+
+        # Generate the configurations
+        flow_paths = generate_configuration(flow_paths)
+
+        # remove the frequency from the flow paths
+        flow_paths = list(map(lambda x: list(map(lambda y: y[1],x)), flow_paths))
+
+        configuration_dot_product = list(product(*flow_paths))
+        wrong_combos = identify_wrong_combos(configuration_dot_product)
+
+        valid_configurations = [element for element in configuration_dot_product if element not in wrong_combos]
+
+        best_combination = sorted(valid_configurations, key=lambda x: count_intersections(combination_to_coordinates(x, slot_coordinates)))[0]
+        return LayoutOutput(
+            number_of_intersections=count_intersections(combination_to_coordinates(best_combination, slot_coordinates)),
+            area_of_overlap=0.0, # TODO: Calculate the area of overlap
+            layout=list(map(lambda x: (1, x), combination_to_coordinates(best_combination, slot_coordinates)))
+        )
 
 
 if __name__ == "__main__":

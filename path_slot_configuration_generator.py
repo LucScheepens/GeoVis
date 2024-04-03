@@ -2,7 +2,7 @@ import pathlib
 import pickle
 from typing import Literal, Union, List, Tuple
 
-from utils import SlotPosition, AVAILABLE_SLOTS
+from utils import SlotPosition, SLOTS, FlowPathsT, FlowPathsWithSlotsT
 
 
 def load_paths() -> dict[tuple[SlotPosition, ...], list[list[tuple[str, SlotPosition]]]]:
@@ -16,7 +16,7 @@ def generate_combinations_variant_b(paths_reminder: tuple) -> list[list[tuple[st
 
     result = []
     current_station_name, new_paths_reminder = paths_reminder[0], paths_reminder[1:]
-    for slot in AVAILABLE_SLOTS:
+    for slot in SLOTS:
         reminder = generate_combinations_variant_b(new_paths_reminder)
         result.extend([
             [(current_station_name, slot)] + r for r in reminder
@@ -25,25 +25,27 @@ def generate_combinations_variant_b(paths_reminder: tuple) -> list[list[tuple[st
     return result
 
 
-def generate_configuration(paths: list[Union[tuple[str, ...], list[str, ...]]]):
+def generate_configuration(paths: FlowPathsT) -> FlowPathsWithSlotsT:
     # Convert the paths to tuple if they are not
     # So we can use them as dictionary keys
-    if any(isinstance(path, list) for path in paths):
-        paths = [tuple(path) for path in paths]
+    # if any(isinstance(path, list) for path in paths):
+    #     paths = [tuple(path) for path in paths]
 
     # Variant A: Starting slot is same as ending slot
     # Generate all possible paths from the start to the end for each slot at given station
-    configurations = {}
-    for path in paths:
-        configurations[path] = []
-        for slot in AVAILABLE_SLOTS:
+    result: FlowPathsWithSlotsT = []
+    for frequency, path in paths:
+        intermediate_res = []
+        for slot in SLOTS:
             path_with_slots = []
             for station in path:
                 path_with_slots.append((station, slot))
 
-            configurations[path].append(path_with_slots)
+            intermediate_res.append((frequency, path_with_slots))
 
-    return configurations
+        result.append(intermediate_res)
+
+    return result
     # for path, slots in generated_paths.items():
     #     print(f"Path {path}: {slots}")
 
