@@ -173,7 +173,7 @@ def generate_fake_metro(
         max_flow_path_length: int,
         min_flow_path_frequency: int = 1,
         max_flow_path_frequency: int = 100
-) -> (FlowPathsT, dict[str, Point], pd.DataFrame):
+) -> (FlowPathsT, dict[str, Point], pd.DataFrame): # type: ignore
     """ Generates a fake metro system with the given parameters.
     :param station_count: The number of stations in the metro system.
     :param flow_path_count: The number flow paths to generate starting from the root.

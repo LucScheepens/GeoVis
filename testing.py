@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from algo import DummyAlgorithm
+from algo import DummyAlgorithm, DirectionalAlg
 from render import render
 from test_data_generator import generate_fake_metro, plot_metro_layout
 from utils import LayoutAlgorithm, FlowPathsT, Point, LayoutOutput
@@ -17,7 +17,8 @@ def main(
         max_flow_path_length: int
 ):
     algorithms: [LayoutAlgorithm] = [
-        DummyAlgorithm()
+        DummyAlgorithm(),
+        DirectionalAlg()
     ]
 
     test_dir = ASSET_PATH / test_id
@@ -59,7 +60,7 @@ def main(
 
 if __name__ == "__main__":
     main(
-        "test-1",
+        "test-2",
         1,
         10,
         10,

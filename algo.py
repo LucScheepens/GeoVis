@@ -169,6 +169,23 @@ class DummyAlgorithm(LayoutAlgorithm):
             layout=list(map(lambda x: (1, x), combination_to_coordinates(best_combination, slot_coordinates)))
         )
 
+   
+class DirectionalAlg(LayoutAlgorithm):
+    @property
+    def name(self) -> str:
+        return "directional"
+    
+    def find_optimal_layout(self, flow_paths: FlowPathsT, stations: dict[str, Point]):
+        station_coords = {}
+
+        for name_station, point in stations.items():
+            station_coords[name_station] = Point(point.x, point.y)
+        
+        for count, path in flow_paths.items():
+            start_point = station_coords[path[0]]
+            end_point = station_coords[path[-1]]
+            start_point.angle_with(end_point)
+
 
 if __name__ == "__main__":
     print(main())
