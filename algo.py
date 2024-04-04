@@ -1,6 +1,7 @@
 import dataclasses
 import pickle
 from itertools import product
+import numpy as np
 
 from path_slot_configuration_generator import generate_configuration
 from utils import Point, LayoutAlgorithm, FlowPathsT, LayoutOutput, SLOTS
@@ -14,16 +15,16 @@ from utils import Point, LayoutAlgorithm, FlowPathsT, LayoutOutput, SLOTS
 
 # TODOL: Add input -> path coordinates
 
-# SLOT_POSITIONS = ['S1', 'S2', 'S3', 'S4', 'S5']
-# NODE_COORDINATES = {
-#     'Root': Point(0, 0),
-#     'A': Point(10, 10),
-#     'C': Point(20, 20),
-#     'F': Point(30, 30),
-#     'G': Point(40, 40),
-#     'H': Point(50, 50)
-# }
-#
+SLOT_POSITIONS = ['S1', 'S2', 'S3', 'S4', 'S5']
+NODE_COORDINATES = {
+    'Root': Point(0, 0),
+    'A': Point(0, 10),
+    'C': Point(10, 20),
+    'F': Point(30, 20),
+    'G': Point(40, 20),
+    'H': Point(40, 50)
+}
+
 SLOT_OFFSETS = {
     'S1': (0, 0),
     'S2': (-1, 1),
@@ -74,38 +75,28 @@ def combination_to_coordinates(configuration, slot_coordinates):
 
 
 def orientation(p, q, r):
-    # some chatGPT razzle dazzle that calculates the intervals??????
+    """Uses the cross product to determine if q lies to the left or right of the line formed by p and r.
+    If the value is 0, it means the points are collinear. If it's positive, q lies to the left, otherwise to the right."""
     val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y)
     if val == 0:
         return 0
     return 1 if val > 0 else 2
 
 
-def do_intersect(p1, q1, p2, q2):
+def do_intersect(x1, y1, x2, y2):
     """Function that checks if two lines intersect"""
-    o1 = orientation(p1, q1, p2)
-    o2 = orientation(p1, q1, q2)
-    o3 = orientation(p2, q2, p1)
-    o4 = orientation(p2, q2, q1)
+    o1 = orientation(x1, y1, x2)
+    o2 = orientation(x1, y1, y2)
+    o3 = orientation(x2, y2, x1)
+    o4 = orientation(x2, y2, y1)
 
-    if o1 != o2 and o3 != o4:
+    if o1 != o2 and o3 != o4: #if x1 and y1 are not oriented the same against line 2, they intersect.
         return True
-
-    if o1 == 0 and on_segment(p1, p2, q1):
-        return True
-    if o2 == 0 and on_segment(p1, q2, q1):
-        return True
-    if o3 == 0 and on_segment(p2, p1, q2):
-        return True
-    if o4 == 0 and on_segment(p2, q1, q2):
+    
+    if o1 == 0 or o2 == 0 or o3 == 0 or o4 == 0: #if a point is collinear with the other line
         return True
 
     return False
-
-
-def on_segment(p, q, r):
-    """Function that checks if a point is on a segment"""
-    return max(p.x, r.x) >= q.x >= min(p.x, r.x) and max(p.y, r.y) >= q.y >= min(p.y, r.y)
 
 
 def count_intersections(lines):
@@ -122,12 +113,86 @@ def count_intersections(lines):
     return count
 
 
+# FUNCTIONS FOR THE RECTANGLES
+
+def coords_widths(combination, flow_paths,slot_coordinates):
+    """Transforms a combination into a tuple with its coordinates and width"""
+    coords_widths = []
+    coords = combination_to_coordinates(combination,slot_coordinates)
+    for idx, tpl in enumerate(flow_paths):
+        if tpl[1] == [item[0] for item in combination]:
+             coords_widths.append(coords[idx],tpl[0])
+    return coords_widths
+
+
+def perpendicular_vector(v):
+    return np.array([-v[1], v[0]], dtype=float)
+
+
+def get_rectangle_corners(point1, point2, width):
+    """Turns one segment of a line into a rectangle"""
+    v = np.array([point2.x - point1.x, point2.y - point1.y], dtype=float)
+    perpendicular = perpendicular_vector(v)
+    perpendicular /= np.linalg.norm(perpendicular)
+    offset = perpendicular * width / 2
+
+    #points are stored clock wise: left bottom, left up, right up, right bottom
+    p1 = Point(point1.x + offset[0], point1.y + offset[1])
+    p2 = Point(point2.x + offset[0], point2.y + offset[1])
+    p3 = Point(point2.x - offset[0], point2.y - offset[1])
+    p4 = Point(point1.x - offset[0], point1.y - offset[1])
+
+    return p1, p2, p3, p4
+
+
+def line_to_rectangles(line, width):
+    """Turns an entire line into a list of rectangles"""
+    rectangles = []
+    for i in range(len(line) - 1):
+        p1, p2, p3, p4 = get_rectangle_corners(line[i], line[i+1], width)
+        rectangles.append([p1, p2, p3, p4])
+    return rectangles
+
+
+def rectangle_intersection_area(rect1, rect2):
+    """Calculate the intersection area between two rectangles."""
+    x_overlap = max(0, min(rect1[1].x, rect2[1].x) - max(rect1[0].x, rect2[0].x))
+    y_overlap = max(0, min(rect1[1].y, rect2[1].y) - max(rect1[0].y, rect2[0].y))
+    return x_overlap * y_overlap
+
+
+def line_overlap(lines):
+    """Calculate the total overlap for each line."""
+    overlaps = 0
+    for i, line1 in enumerate(lines):
+        total_overlap = 0
+        for j, line2 in enumerate(lines):
+            if i != j:  # Avoid comparing a line with itself
+                for rect1 in line1:
+                    for rect2 in line2:
+                        total_overlap += rectangle_intersection_area(rect1, rect2)
+        overlaps += total_overlap
+    return overlaps
+
+
+def total_overlap(combination,flow_paths,slot_coordinates):
+    """Calculate the total overlap""" 
+    b_comb_width = coords_widths(combination,flow_paths,slot_coordinates)
+    rect_comb = []
+    for line in b_comb_width:
+        rectangles = line_to_rectangles(line[0], line[1])
+        rect_comb.append(rectangles)
+    return line_overlap(rect_comb)
+
+
 def main(path: str = "assets/generated-path.pkl"):
     with open(path, "rb") as f:
         paths = pickle.load(f)
 
-    paths = {('Root', 'A', 'C'): [[('Root', 'S1'), ('A', 'S1'), ('C', 'S1')], [('Root', 'S2'), ('A', 'S2'), ('C', 'S2')], [('Root', 'S3'), ('A', 'S3'), ('C', 'S3')], [('Root', 'S4'), ('A', 'S4'), ('C', 'S4')], [('Root', 'S5'), ('A', 'S5'), ('C', 'S5')]], ('Root', 'A', 'C', 'F', 'G'): [[('Root', 'S1'), ('A', 'S1'), ('C', 'S1'), ('F', 'S1'), ('G', 'S1')], [('Root', 'S2'), ('A', 'S2'), ('C', 'S2'), ('F', 'S2'), ('G', 'S2')], [('Root', 'S3'), ('A', 'S3'), ('C', 'S3'), ('F', 'S3'), ('G', 'S3')], [('Root', 'S4'), ('A', 'S4'), ('C', 'S4'), ('F', 'S4'), ('G', 'S4')], [('Root', 'S5'), ('A', 'S5'), ('C', 'S5'), ('F', 'S5'), ('G', 'S5')]], ('Root', 'A', 'C', 'F', 'H'): [[('Root', 'S1'), ('A', 'S1'), ('C', 'S1'), ('F', 'S1'), ('H', 'S1')], [('Root', 'S2'), ('A', 'S2'), ('C', 'S2'), ('F', 'S2'), ('H', 'S2')], [('Root', 'S3'), ('A', 'S3'), ('C', 'S3'), ('F', 'S3'), ('H', 'S3')], [('Root', 'S4'), ('A', 'S4'), ('C', 'S4'), ('F', 'S4'), ('H', 'S4')], [('Root', 'S5'), ('A', 'S5'), ('C', 'S5'), ('F', 'S5'), ('H', 'S5')]]}
-
+    da = DummyAlgorithm()
+    result = da.find_optimal_layout([(2,['Root','A','C']),(1,['Root','A','C','F','G']),(3,['Root','A','C','F','H'])],NODE_COORDINATES)
+    print(result)
+    
     # configuration_dot_product = list(product(*paths.values()))
     # wrong_combos = identify_wrong_combos(configuration_dot_product)
     #
@@ -150,22 +215,23 @@ class DummyAlgorithm(LayoutAlgorithm):
                 offset_x, offset_y = SLOT_OFFSETS[slot]
                 slot_coordinates[(station_name, slot)] = Point(point.x + offset_x, point.y + offset_y)
 
-
+        # print(flow_paths)
         # Generate the configurations
-        flow_paths = generate_configuration(flow_paths)
+        config = generate_configuration(flow_paths)
 
         # remove the frequency from the flow paths
-        flow_paths = list(map(lambda x: list(map(lambda y: y[1],x)), flow_paths))
+        pos_comb = list(map(lambda x: list(map(lambda y: y[1],x)), config))
 
-        configuration_dot_product = list(product(*flow_paths))
+        configuration_dot_product = list(product(*pos_comb))
         wrong_combos = identify_wrong_combos(configuration_dot_product)
 
         valid_configurations = [element for element in configuration_dot_product if element not in wrong_combos]
+        # print(valid_configurations)
 
         best_combination = sorted(valid_configurations, key=lambda x: count_intersections(combination_to_coordinates(x, slot_coordinates)))[0]
         return LayoutOutput(
             number_of_intersections=count_intersections(combination_to_coordinates(best_combination, slot_coordinates)),
-            area_of_overlap=0.0, # TODO: Calculate the area of overlap
+            area_of_overlap=total_overlap(best_combination,flow_paths,slot_coordinates),
             layout=list(map(lambda x: (1, x), combination_to_coordinates(best_combination, slot_coordinates)))
         )
 
