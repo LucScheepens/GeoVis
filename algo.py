@@ -1,6 +1,7 @@
 import dataclasses
 import pickle
 from itertools import product
+import math
 
 from path_slot_configuration_generator import generate_configuration
 from utils import Point, LayoutAlgorithm, FlowPathsT, LayoutOutput, SLOTS
@@ -170,6 +171,36 @@ class DummyAlgorithm(LayoutAlgorithm):
         )
 
    
+def calc_angles(flow_paths, station_coords):
+    list_of_angles_pos = {}
+    list_of_angles_neg = {}
+    for path in flow_paths:
+        start_point = station_coords[path[1][0]]
+        end_point = station_coords[path[1][-1]]
+        angle_between_start_end = start_point.angle_with(end_point)
+        path_key = ''.join(path[1])
+
+        if angle_between_start_end >= 0: 
+            list_of_angles_pos[path_key] = angle_between_start_end
+        else:
+            list_of_angles_neg[path_key] = angle_between_start_end
+            
+    return [list_of_angles_pos, list_of_angles_neg]
+
+def generate_slots(list_of_angles):
+    N = len(list_of_angles)
+    SLOT_OFFSETS = {}
+    for i in range(1, N+1):
+        theta = math.pi * (i - 0.5) / N
+        x = round(math.cos(theta), 3)
+        y = round(math.sin(theta), 3)
+        SLOT_OFFSETS[f'S{i}'] = (x, y)
+    return SLOT_OFFSETS
+
+def generate_slots_labels(N):
+    return [f"S{i}" for i in range(1, N+1)]
+
+
 class DirectionalAlg(LayoutAlgorithm):
     @property
     def name(self) -> str:
@@ -177,14 +208,29 @@ class DirectionalAlg(LayoutAlgorithm):
     
     def find_optimal_layout(self, flow_paths: FlowPathsT, stations: dict[str, Point]):
         station_coords = {}
+        slot_coordinates = {}
 
         for name_station, point in stations.items():
             station_coords[name_station] = Point(point.x, point.y)
+        [pos_angles, neg_angles] = calc_angles(flow_paths, station_coords)
+
+
+
+        slots_pos = generate_slots(pos_angles.values())
+        slots_neg = generate_slots(neg_angles.values())
+        SLOTSLABELS_neg = generate_slots_labels(len(slots_neg))
+        SLOTSLABELS_pos = generate_slots_labels(len(slots_pos))
+
+        for station_name, point in stations.items():
+            for slot in SLOTSLABELS_neg:
+                offset_x, offset_y = slots_neg[slot]
+                slot_coordinates[(station_name, slot)] = Point(point.x + offset_x, point.y + offset_y)
+            for slot in SLOTSLABELS_pos:
+                offset_x, offset_y = slots_pos[slot]
+                slot_coordinates[(station_name, slot)] = Point(point.x + offset_x, point.y + offset_y)
+        return slot_coordinates
         
-        for count, path in flow_paths.items():
-            start_point = station_coords[path[0]]
-            end_point = station_coords[path[-1]]
-            start_point.angle_with(end_point)
+
 
 
 if __name__ == "__main__":
