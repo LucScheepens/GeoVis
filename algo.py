@@ -162,6 +162,7 @@ class DummyAlgorithm(LayoutAlgorithm):
         wrong_combos = identify_wrong_combos(configuration_dot_product)
 
         valid_configurations = [element for element in configuration_dot_product if element not in wrong_combos]
+        # return valid_configurations
 
         best_combination = sorted(valid_configurations, key=lambda x: count_intersections(combination_to_coordinates(x, slot_coordinates)))[0]
         return LayoutOutput(
@@ -188,24 +189,21 @@ def calc_angles(flow_paths, station_coords):
     return [list_of_angles_pos, list_of_angles_neg]
 
 def generate_slots(list_of_angles):
+    max_length = 0
     SLOT_OFFSETS = {}
-    x, y = 0, 0
-    counter = 0
 
-    for name, angle in list_of_angles[0].items():
-        if angle >= 0:
-            x += 1 if counter % 2 == 0 else 0
-            y += 1 if counter % 2 != 0 else 0
-            SLOT_OFFSETS[f'S{counter}'] = (x, y)
-            counter += 1
+    for angle in list_of_angles:
+        if len(angle) >= max_length:
+            max_length = len(angle)
+    list_of_list = [[(i,i), (i, -i), (-i, i), (-i, -i)] for i in range (1,max_length)]
+    flattened_list = [(0,0)]
 
-    x, y = 0, 0
+    for sublist in list_of_list:
+        for tuple_item in sublist:
+            flattened_list.append(tuple_item)
 
-    for name, angle in list_of_angles[1].items():
-        x -= 1 if counter % 2 == 0 else 0
-        y -= 1 if counter % 2 != 0 else 0
-        SLOT_OFFSETS[f'S{counter}'] = (x, y)
-        counter += 1
+    for i in range(2*max_length):
+        SLOT_OFFSETS[f'S{i}'] = flattened_list[i]
 
     return SLOT_OFFSETS
 
