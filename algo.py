@@ -6,11 +6,12 @@ import numpy as np
 from path_slot_configuration_generator import generate_configuration
 from utils import Point, LayoutAlgorithm, FlowPathsT, LayoutOutput, SLOTS
 
-# TODO: Output must include the frequency of each path
+# Done: Output must include the frequency of each path
 # TODO: Number of slots should be calculated dynamically
 #       => Another objective is to minimize the number of slots?
 # TODO: Slot offsets should be calculated dynamically
-# TODO: What is the lines overlap? How to calculate it? -> Optimize the path to minimize the overlap
+# Done: What is the lines overlap? How to calculate it?
+# TODO: Optimize the path to minimize the overlap
 #  -> E.g. by putting the thick line to side or by changing the slot offset
 
 # TODOL: Add input -> path coordinates
@@ -19,10 +20,10 @@ SLOT_POSITIONS = ['S1', 'S2', 'S3', 'S4', 'S5']
 NODE_COORDINATES = {
     'Root': Point(0, 0),
     'A': Point(0, 10),
-    'C': Point(10, 20),
-    'F': Point(30, 20),
-    'G': Point(40, 20),
-    'H': Point(40, 50)
+    'C': Point(10, 10),
+    'F': Point(30, 10),
+    'G': Point(40, 10),
+    'H': Point(30, 20)
 }
 
 SLOT_OFFSETS = {
@@ -118,10 +119,14 @@ def count_intersections(lines):
 def coords_widths(combination, flow_paths,slot_coordinates):
     """Transforms a combination into a tuple with its coordinates and width"""
     coords_widths = []
-    coords = combination_to_coordinates(combination,slot_coordinates)
-    for idx, tpl in enumerate(flow_paths):
-        if tpl[1] == [item[0] for item in combination]:
-             coords_widths.append(coords[idx],tpl[0])
+    for width, path_list in flow_paths:
+        coords = combination_to_coordinates(combination,slot_coordinates)
+        for i,sublist in enumerate(combination):
+            path_in_comb = []
+            for item in sublist:
+                path_in_comb.append(item[0])
+            if path_list == path_in_comb:
+                coords_widths.append((coords[i],width))
     return coords_widths
 
 
@@ -146,7 +151,8 @@ def get_rectangle_corners(point1, point2, width):
 
 
 def line_to_rectangles(line, width):
-    """Turns an entire line into a list of rectangles"""
+    """Turns an entire line into a list of rectangles
+    A line with three points returns two rectangles"""
     rectangles = []
     for i in range(len(line) - 1):
         p1, p2, p3, p4 = get_rectangle_corners(line[i], line[i+1], width)
@@ -162,7 +168,7 @@ def rectangle_intersection_area(rect1, rect2):
 
 
 def line_overlap(lines):
-    """Calculate the total overlap for each line."""
+    """Calculates how much all the lines overlap"""
     overlaps = 0
     for i, line1 in enumerate(lines):
         total_overlap = 0
@@ -175,14 +181,46 @@ def line_overlap(lines):
     return overlaps
 
 
-def total_overlap(combination,flow_paths,slot_coordinates):
-    """Calculate the total overlap""" 
-    b_comb_width = coords_widths(combination,flow_paths,slot_coordinates)
-    rect_comb = []
-    for line in b_comb_width:
-        rectangles = line_to_rectangles(line[0], line[1])
+def total_area(rectangles):
+    """Function that returns the total area of a set of rectangles"""
+    tot_area = 0
+    for rect in rectangles:
+        # Find min and max x and y coordinates
+        min_x = min(point.x for point in rect)
+        max_x = max(point.x for point in rect)
+        min_y = min(point.y for point in rect)
+        max_y = max(point.y for point in rect)
+        
+        # Calculate width and height
+        width = max_x - min_x
+        height = max_y - min_y
+        
+        # Calculate area
+        area = width * height
+        tot_area += area
+    return tot_area
+
+
+def total_overlap_ratio(combination,flow_paths,slot_coordinates):
+    """Calculate the ratio of total overlap""" 
+    comb_width = coords_widths(combination,flow_paths,slot_coordinates)
+    rect_comb = [] # a list of lists with rectangles, representing the lines
+    total_overlap = 0
+    for line, width in comb_width:
+        rectangles = line_to_rectangles(line, width)
         rect_comb.append(rectangles)
-    return line_overlap(rect_comb)
+        total_overlap += total_area(rectangles)
+    return line_overlap(rect_comb) / total_overlap
+
+
+# may be more interesting to do this differently than just adding them
+def score_combination(combination, flow_paths, slot_coordinates):
+    """Function that adds up our two constraints to find the combination that minimizes both"""
+    intersections = count_intersections(combination_to_coordinates(combination, slot_coordinates))
+    overlap_ratio = total_overlap_ratio(combination, flow_paths, slot_coordinates)
+    
+    score = intersections + overlap_ratio
+    return score
 
 
 def main(path: str = "assets/generated-path.pkl"):
@@ -191,15 +229,8 @@ def main(path: str = "assets/generated-path.pkl"):
 
     da = DummyAlgorithm()
     result = da.find_optimal_layout([(2,['Root','A','C']),(1,['Root','A','C','F','G']),(3,['Root','A','C','F','H'])],NODE_COORDINATES)
-    print(result)
-    
-    # configuration_dot_product = list(product(*paths.values()))
-    # wrong_combos = identify_wrong_combos(configuration_dot_product)
-    #
-    # valid_configurations = [element for element in configuration_dot_product if element not in wrong_combos]
-    #
-    # best_combination = sorted(valid_configurations, key=lambda x: count_intersections(combination_to_coordinates(x)))[0]
-    # return combination_to_coordinates(best_combination)
+    print("Right now uses imaginary data (extra imaginary then our generated data)")
+    return result
 
 
 class DummyAlgorithm(LayoutAlgorithm):
@@ -215,7 +246,6 @@ class DummyAlgorithm(LayoutAlgorithm):
                 offset_x, offset_y = SLOT_OFFSETS[slot]
                 slot_coordinates[(station_name, slot)] = Point(point.x + offset_x, point.y + offset_y)
 
-        # print(flow_paths)
         # Generate the configurations
         config = generate_configuration(flow_paths)
 
@@ -226,12 +256,20 @@ class DummyAlgorithm(LayoutAlgorithm):
         wrong_combos = identify_wrong_combos(configuration_dot_product)
 
         valid_configurations = [element for element in configuration_dot_product if element not in wrong_combos]
-        # print(valid_configurations)
 
-        best_combination = sorted(valid_configurations, key=lambda x: count_intersections(combination_to_coordinates(x, slot_coordinates)))[0]
+        # # for testing
+        # print()
+        # for comb in valid_configurations:
+        #     print("number_of_intersections",count_intersections(combination_to_coordinates(comb, slot_coordinates)))
+        #     print("area_of_overlap", total_overlap_ratio(comb,flow_paths,slot_coordinates))
+        #     print("layout", list(map(lambda x: (1, x), combination_to_coordinates(comb, slot_coordinates))))
+        # print()
+
+        # determines the best combination using the score_combination function
+        best_combination = sorted(valid_configurations, key=lambda x: score_combination(x,flow_paths,slot_coordinates))[0]
         return LayoutOutput(
             number_of_intersections=count_intersections(combination_to_coordinates(best_combination, slot_coordinates)),
-            area_of_overlap=total_overlap(best_combination,flow_paths,slot_coordinates),
+            area_of_overlap=total_overlap_ratio(best_combination,flow_paths,slot_coordinates),
             layout=list(map(lambda x: (1, x), combination_to_coordinates(best_combination, slot_coordinates)))
         )
 
