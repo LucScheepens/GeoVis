@@ -188,13 +188,25 @@ def calc_angles(flow_paths, station_coords):
     return [list_of_angles_pos, list_of_angles_neg]
 
 def generate_slots(list_of_angles):
-    N = len(list_of_angles)
     SLOT_OFFSETS = {}
-    for i in range(1, N+1):
-        theta = math.pi * (i - 0.5) / N
-        x = round(math.cos(theta), 3)
-        y = round(math.sin(theta), 3)
-        SLOT_OFFSETS[f'S{i}'] = (x, y)
+    x, y = 0, 0
+    counter = 0
+
+    for name, angle in list_of_angles[0].items():
+        if angle >= 0:
+            x += 1 if counter % 2 == 0 else 0
+            y += 1 if counter % 2 != 0 else 0
+            SLOT_OFFSETS[f'S{counter}'] = (x, y)
+            counter += 1
+
+    x, y = 0, 0
+
+    for name, angle in list_of_angles[1].items():
+        x -= 1 if counter % 2 == 0 else 0
+        y -= 1 if counter % 2 != 0 else 0
+        SLOT_OFFSETS[f'S{counter}'] = (x, y)
+        counter += 1
+
     return SLOT_OFFSETS
 
 def generate_slots_labels(N):
@@ -212,23 +224,23 @@ class DirectionalAlg(LayoutAlgorithm):
 
         for name_station, point in stations.items():
             station_coords[name_station] = Point(point.x, point.y)
-        [pos_angles, neg_angles] = calc_angles(flow_paths, station_coords)
+        list_of_angles = calc_angles(flow_paths, station_coords)
 
-
-
-        slots_pos = generate_slots(pos_angles.values())
-        slots_neg = generate_slots(neg_angles.values())
-        SLOTSLABELS_neg = generate_slots_labels(len(slots_neg))
-        SLOTSLABELS_pos = generate_slots_labels(len(slots_pos))
+        SLOT_OFFSETS = generate_slots(list_of_angles)
 
         for station_name, point in stations.items():
-            for slot in SLOTSLABELS_neg:
-                offset_x, offset_y = slots_neg[slot]
+            for slot, offset in SLOT_OFFSETS.items():
+                offset_x, offset_y = SLOT_OFFSETS[slot]
                 slot_coordinates[(station_name, slot)] = Point(point.x + offset_x, point.y + offset_y)
-            for slot in SLOTSLABELS_pos:
-                offset_x, offset_y = slots_pos[slot]
-                slot_coordinates[(station_name, slot)] = Point(point.x + offset_x, point.y + offset_y)
+
         return slot_coordinates
+        # slots_pos = generate_slots(pos_angles.values())
+        # slots_neg = generate_slots(neg_angles.values())
+        # SLOTSLABELS_neg = generate_slots_labels(len(slots_neg))
+        # SLOTSLABELS_pos = generate_slots_labels(len(slots_pos))
+
+
+        # return slot_coordinates
         
 
 
