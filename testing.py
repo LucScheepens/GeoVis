@@ -1,9 +1,12 @@
 import os
+import shutil
+import time
 from pathlib import Path
 
 import pandas as pd
 
-from algo import DummyAlgorithm, DynamicRanges
+from dummy_algo import DummyAlgorithm
+from dynamic_ranges import DynamicRanges
 from render import render
 from test_data_generator import generate_fake_metro, plot_metro_layout
 from utils import LayoutAlgorithm, FlowPathsT, Point, LayoutOutput
@@ -22,6 +25,9 @@ def main(
     ]
 
     test_dir = ASSET_PATH / test_id
+    if os.path.exists(test_dir):
+        shutil.rmtree(test_dir)
+
     os.mkdir(test_dir)
 
     statistics = []
@@ -40,13 +46,19 @@ def main(
 
         for algorithm in algorithms:
             (test_dir / algorithm.name).mkdir(exist_ok=True)
+
+            # time the algorithm
+            start_time = time.time_ns()
             output = algorithm.find_optimal_layout(flow_paths, stations)
+            delta_time_ms = (time.time_ns() - start_time) / 1_000_000
+
             render(output, stations, test_dir / algorithm.name / f"{algorithm.name}-{n}.html")
             statistics.append({
                 "algorithm": algorithm.name,
                 "iteration": n,
                 "intersections": output.number_of_intersections,
                 "covered_area": output.area_of_overlap,
+                "time_ms": delta_time_ms
             })
 
     df = pd.DataFrame(statistics, columns=["algorithm", "iteration", "intersections", "covered_area"])
