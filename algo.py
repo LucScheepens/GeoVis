@@ -162,23 +162,45 @@ def line_to_rectangles(line, width):
 
 def rectangle_intersection_area(rect1, rect2):
     """Calculate the intersection area between two rectangles."""
-    x_overlap = max(0, min(rect1[1].x, rect2[1].x) - max(rect1[0].x, rect2[0].x))
-    y_overlap = max(0, min(rect1[1].y, rect2[1].y) - max(rect1[0].y, rect2[0].y))
+
+    def highest_lowest(a, b, c):
+        """Helper function that determines the highest and lowest coordinate
+        The total number of points in the square is four, but we dont need the fourth one to determine this"""
+        if a == b:
+            if a >= c:
+                return (a,c)
+            else:
+                return (c,a)
+        else:
+            if a >= b:
+                return (a,b)
+            else:
+                return (b,a)
+
+
+    #the highest x coordinate and the lowest x coordinate of rectangle 1 etc.  
+    highest_x_1,lowest_x_1 = highest_lowest(rect1[0].x, rect1[1].x, rect1[2].x)
+    highest_x_2,lowest_x_2 = highest_lowest(rect2[0].x, rect2[1].x, rect2[2].x)
+    highest_y_1,lowest_y_1 = highest_lowest(rect1[0].y, rect1[1].y, rect1[2].y)
+    highest_y_2,lowest_y_2 = highest_lowest(rect2[0].y, rect2[1].y, rect2[2].y)
+
+    x_overlap = max(0, min(highest_x_1, highest_x_2) - max(lowest_x_1, lowest_x_2))
+    y_overlap = max(0, min(highest_y_1, highest_y_2) - max(lowest_y_1, lowest_y_2))
+
     return x_overlap * y_overlap
 
 
 def line_overlap(lines):
     """Calculates how much all the lines overlap"""
-    overlaps = 0
-    for i, line1 in enumerate(lines):
-        total_overlap = 0
-        for j, line2 in enumerate(lines):
-            if i != j:  # Avoid comparing a line with itself
-                for rect1 in line1:
-                    for rect2 in line2:
-                        total_overlap += rectangle_intersection_area(rect1, rect2)
-        overlaps += total_overlap
-    return overlaps
+    overlap = 0
+    for i in range(len(lines)):
+        for j in range(i+1, len(lines)):
+            line1 = lines[i]
+            line2 = lines[j]
+            for rect1 in line1:
+                for rect2 in line2:
+                    overlap += rectangle_intersection_area(rect1,rect2)
+    return overlap
 
 
 def total_area(rectangles):
