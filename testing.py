@@ -5,11 +5,11 @@ from pathlib import Path
 
 import pandas as pd
 
-from dummy_algo import DummyAlgorithm
-from dynamic_ranges import DynamicRanges
+from algorithms.dummy_algo import DummyAlgorithm
+from algorithms.dynamic_ranges import DynamicRanges
 from render import render
 from test_data_generator import generate_fake_metro, plot_metro_layout
-from utils import LayoutAlgorithm, FlowPathsT, Point, LayoutOutput
+from utils import LayoutAlgorithm
 
 ASSET_PATH = Path(__file__).parent / "assets"
 
