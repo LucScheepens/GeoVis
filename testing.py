@@ -16,7 +16,7 @@ def main(
         flow_path_count: int,
         max_flow_path_length: int
 ):
-    algorithms: [LayoutAlgorithm] = [
+    algorithms: [LayoutAlgorithm] = [ # type: ignore
         DummyAlgorithm(),
         DirectionalAlg()
     ]
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     main(
         "test-2",
         1,
-        10,
+        3,
         10,
         5
     )

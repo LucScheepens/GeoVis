@@ -210,6 +210,38 @@ def generate_slots(list_of_angles):
 def generate_slots_labels(N):
     return [f"S{i}" for i in range(1, N+1)]
 
+def map_path_keys_to_stations(dict_of_paths):
+    import re
+
+    list_of_dict = []
+
+    for key, value in dict_of_paths.items():
+        split_key =re.findall('[A-Z][^A-Z]*', key)
+        new_dict = {}
+
+        for i in split_key:
+            new_dict[i] = value
+        list_of_dict.append(new_dict)
+    return list_of_dict
+
+import random
+import pandas as pd
+
+
+def convert_to_list_of_tuples(input_data):
+    output_data = []
+    for item in input_data:
+        new_item = [(k, v) for k, v in item.items()]
+        output_data.append(new_item)
+    return output_data
+
+def obtain_points_from_keys(combinations, slot_coordinates):
+    list_of_points, list_of_paths = [],[]
+    for path in combinations:
+        for slot in path:
+            list_of_points.append(slot_coordinates[slot])
+        list_of_paths.append(list_of_points)
+    return list_of_paths
 
 class DirectionalAlg(LayoutAlgorithm):
     @property
@@ -231,40 +263,54 @@ class DirectionalAlg(LayoutAlgorithm):
                 offset_x, offset_y = SLOT_OFFSETS[slot]
                 slot_coordinates[(station_name, slot)] = Point(point.x + offset_x, point.y + offset_y)
         # return slot_coordinates
-        top_right, top_left, bottom_right, bottom_left = [],[],[],[]
+        slot_assigned = {}
+        # print(list_of_angles)
         for i in range(2):
             my_dict = list_of_angles[i]
             sorted_dict = dict(sorted(my_dict.items(), key=lambda item: item[1], reverse=True))
 
             for key, angle in sorted_dict.items():
-                if angle > 0 and angle <= 0.5 * math.pi:
-                    top_right.append(angle)
+                    if angle >= 0 and angle <= 0.5 * math.pi:
+                        max_y_pair_pos_x = max(SLOT_OFFSETS.items(), key=lambda item: item[1][1] if item[1][0] > 0 else float("-inf"))
+                        value = SLOT_OFFSETS.pop(max_y_pair_pos_x[0])
+                        slot_assigned[key] = max_y_pair_pos_x[0]
+                        # print(f"Angle {angle} for key {key} is between 0 and 0.5*pi")
 
-                    print(f"Angle {angle} for key {key} is between 0 and 0.5*pi")
-                elif angle > 0.5 * math.pi and angle <= math.pi:
-                    top_left.append(angle)
-                    max_y_pair_neg_x = max(slot_coordinates.items(), key=lambda item: item[1].y if item[1].x < 0 else float("-inf"))
-                    value = slot_coordinates.pop(max_y_pair_neg_x[0])
-                    
-                    print(f"Angle {angle} for key {key} is between 0.5*pi and pi")
-                elif angle < 0 and angle >= -0.5 * math.pi:
-                    print(f"Angle {angle} for key {key} is between 0 and -0.5*pi")
-                    bottom_right.append(angle)
-                elif angle < -0.5 * math.pi and angle >= -math.pi:
-                    print(f"Angle {angle} for key {key} is between -0.5*pi and -pi")    
-                    bottom_left.append(angle)
-            
-        
-        return [top_left, top_right, bottom_right, bottom_left]
-        # slots_pos = generate_slots(pos_angles.values())
-        # slots_neg = generate_slots(neg_angles.values())
-        # SLOTSLABELS_neg = generate_slots_labels(len(slots_neg))
-        # SLOTSLABELS_pos = generate_slots_labels(len(slots_pos))
+                    elif angle >= 0.5 * math.pi and angle <= math.pi:
+                        max_y_pair_neg_x = max(SLOT_OFFSETS.items(), key=lambda item: item[1][1] if item[1][0] < 0 else float("-inf"))
+                        value = SLOT_OFFSETS.pop(max_y_pair_neg_x[0])
+                        slot_assigned[key] = max_y_pair_neg_x[0]
+                        # print(f"Angle {angle} for key {key} is between 0.5*pi and pi")
 
+                    elif angle < 0 and angle >= -0.5 * math.pi:
+                        min_y_pair_pos_x = min(SLOT_OFFSETS.items(), key=lambda item: item[1][1] if item[1][0] > 0 else float("-inf"))
+                        value = SLOT_OFFSETS.pop(min_y_pair_pos_x[0])
+                        slot_assigned[key] = min_y_pair_pos_x[0]
+                        # print(f"Angle {angle} for key {key} is between 0 and -0.5*pi")
 
-        # return slot_coordinates
-        
+                    elif angle < -0.5 * math.pi and angle >= -math.pi:
+                        min_y_pair_neg_x = min(SLOT_OFFSETS.items(), key=lambda item: item[1][1] if item[1][0] < 0 else float("-inf"))
+                        value = SLOT_OFFSETS.pop(min_y_pair_neg_x[0])
+                        slot_assigned[key] = min_y_pair_neg_x[0]
+                        # print(f"Angle {angle} for key {key} is between -0.5*pi and -pi")    
 
+        best_stations_with_slots = map_path_keys_to_stations(slot_assigned)
+        combination_merged = convert_to_list_of_tuples(best_stations_with_slots)
+        print(combination_merged)
+
+        #TODO fix deze functie call, hij maakt teveel punten, kut python
+        combinations_points = obtain_points_from_keys(combination_merged,slot_coordinates)
+        print(combinations_points)
+        intersections = count_intersections(combination_to_coordinates(combination_merged, slot_coordinates))
+
+        layout = list(map(lambda x: (1, x), combinations_points))
+        print(f'layout is equal to {layout}')
+        # return combination_merged
+        return LayoutOutput(
+            number_of_intersections=intersections, 
+            area_of_overlap=0,
+            layout = layout
+        )
 
 
 if __name__ == "__main__":
