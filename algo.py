@@ -230,8 +230,32 @@ class DirectionalAlg(LayoutAlgorithm):
             for slot, offset in SLOT_OFFSETS.items():
                 offset_x, offset_y = SLOT_OFFSETS[slot]
                 slot_coordinates[(station_name, slot)] = Point(point.x + offset_x, point.y + offset_y)
+        # return slot_coordinates
+        top_right, top_left, bottom_right, bottom_left = [],[],[],[]
+        for i in range(2):
+            my_dict = list_of_angles[i]
+            sorted_dict = dict(sorted(my_dict.items(), key=lambda item: item[1], reverse=True))
 
-        return slot_coordinates
+            for key, angle in sorted_dict.items():
+                if angle > 0 and angle <= 0.5 * math.pi:
+                    top_right.append(angle)
+
+                    print(f"Angle {angle} for key {key} is between 0 and 0.5*pi")
+                elif angle > 0.5 * math.pi and angle <= math.pi:
+                    top_left.append(angle)
+                    max_y_pair_neg_x = max(slot_coordinates.items(), key=lambda item: item[1].y if item[1].x < 0 else float("-inf"))
+                    value = slot_coordinates.pop(max_y_pair_neg_x[0])
+                    
+                    print(f"Angle {angle} for key {key} is between 0.5*pi and pi")
+                elif angle < 0 and angle >= -0.5 * math.pi:
+                    print(f"Angle {angle} for key {key} is between 0 and -0.5*pi")
+                    bottom_right.append(angle)
+                elif angle < -0.5 * math.pi and angle >= -math.pi:
+                    print(f"Angle {angle} for key {key} is between -0.5*pi and -pi")    
+                    bottom_left.append(angle)
+            
+        
+        return [top_left, top_right, bottom_right, bottom_left]
         # slots_pos = generate_slots(pos_angles.values())
         # slots_neg = generate_slots(neg_angles.values())
         # SLOTSLABELS_neg = generate_slots_labels(len(slots_neg))
