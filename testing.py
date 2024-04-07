@@ -25,7 +25,7 @@ def main(
     algorithms: [LayoutAlgorithm] = [
         DynamicRanges(),
         DirectionalAlg(),
-        # DummyAlgorithm(),
+        DummyAlgorithm(),
     ]
 
     test_dir = ASSET_PATH / test_id
@@ -37,6 +37,7 @@ def main(
     statistics = []
 
     for n in range(num_of_iterations):
+        iteration_start_time = time.time()
         print(f"🔄 Running iteration {n}...")
         flow_paths, stations, df = generate_fake_metro(
             station_count=station_count,
@@ -67,7 +68,10 @@ def main(
                 "covered_area": output.area_of_overlap,
                 "time_ms": delta_time_ms
             })
-            print("✅")
+            print(f"✅")
+
+        iteration_delta_s = (time.time() - iteration_start_time)
+        print(f"✅ Iteration done in {iteration_delta_s}s")
 
     df = pd.DataFrame(statistics, columns=["algorithm", "iteration", "intersections", "covered_area", "time_ms"])
 
@@ -84,9 +88,9 @@ def main(
 
 if __name__ == "__main__":
     main(
-        "test-2x",
-        1,
-        15,
+        "test-2",
+        10,
+        10,
         5,
         7
     )
