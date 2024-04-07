@@ -40,8 +40,8 @@ def main(
         print(f"🔄 Running iteration {n}...")
         flow_paths, stations, df = generate_fake_metro(
             station_count=station_count,
-            flow_path_count=5,
-            max_flow_path_length=3,
+            flow_path_count=flow_path_count,
+            max_flow_path_length=max_flow_path_length,
             min_flow_path_frequency=1,
             max_flow_path_frequency=100
         )
@@ -86,6 +86,6 @@ if __name__ == "__main__":
         "test-2x",
         1,
         15,
-        10,
+        5,
         7
     )
