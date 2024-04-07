@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <title>pydeck</title>
+        <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.13.0/mapbox-gl.js"></script>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" />
+    <script src='https://cdn.jsdelivr.net/npm/@deck.gl/jupyter-widget@~8.8.*/dist/index.js'></script>
+    <style>
+    body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+#deck-container {
+  width: 100vw;
+  height: 100vh;
+}
+
+#deck-container canvas {
+  z-index: 1;
+  background: none;
+}
+    </style>
+  </head>
+  <body>
+    <div id="deck-container">
+    </div>
+  </body>
+  <script>
+    const container = document.getElementById('deck-container');
+    const jsonInput = {
+  "initialViewState": {
+    "target": [
+      0,
+      0,
+      0
+    ],
+    "zoom": 2
+  },
+  "layers": [
+    {
+      "@@type": "ScatterplotLayer",
+      "data": [
+        {
+          "ld_x": [
+            76,
+            -44
+          ],
+          "ld_y": [
+            84,
+            -36
+          ],
+          "rd_x": [
+            84,
+            -44
+          ],
+          "rd_y": [
+            76,
+            -36
+          ],
+          "station_name": "Root",
+          "x": 80,
+          "y": -40
+        },
+        {
+          "ld_x": [
+            76,
+            -4
+          ],
+          "ld_y": [
+            84,
+            4
+          ],
+          "rd_x": [
+            84,
+            -4
+          ],
+          "rd_y": [
+            76,
+            4
+          ],
+          "station_name": "A",
+          "x": 80,
+          "y": 0
+        },
+        {
+          "ld_x": [
+            96,
+            -84
+          ],
+          "ld_y": [
+            104,
+            -76
+          ],
+          "rd_x": [
+            104,
+            -84
+          ],
+          "rd_y": [
+            96,
+            -76
+          ],
+          "station_name": "B",
+          "x": 100,
+          "y": -80
+        },
+        {
+          "ld_x": [
+            76,
+            -64
+          ],
+          "ld_y": [
+            84,
+            -56
+          ],
+          "rd_x": [
+            84,
+            -64
+          ],
+          "rd_y": [
+            76,
+            -56
+          ],
+          "station_name": "C",
+          "x": 80,
+          "y": -60
+        },
+        {
+          "ld_x": [
+            76,
+            -104
+          ],
+          "ld_y": [
+            84,
+            -96
+          ],
+          "rd_x": [
+            84,
+            -104
+          ],
+          "rd_y": [
+            76,
+            -96
+          ],
+          "station_name": "D",
+          "x": 80,
+          "y": -100
+        },
+        {
+          "ld_x": [
+            36,
+            -104
+          ],
+          "ld_y": [
+            44,
+            -96
+          ],
+          "rd_x": [
+            44,
+            -104
+          ],
+          "rd_y": [
+            36,
+            -96
+          ],
+          "station_name": "E",
+          "x": 40,
+          "y": -100
+        },
+        {
+          "ld_x": [
+            -4,
+            -64
+          ],
+          "ld_y": [
+            4,
+            -56
+          ],
+          "rd_x": [
+            4,
+            -64
+          ],
+          "rd_y": [
+            -4,
+            -56
+          ],
+          "station_name": "F",
+          "x": 0,
+          "y": -60
+        },
+        {
+          "ld_x": [
+            36,
+            -44
+          ],
+          "ld_y": [
+            44,
+            -36
+          ],
+          "rd_x": [
+            44,
+            -44
+          ],
+          "rd_y": [
+            36,
+            -36
+          ],
+          "station_name": "G",
+          "x": 40,
+          "y": -40
+        },
+        {
+          "ld_x": [
+            36,
+            -84
+          ],
+          "ld_y": [
+            44,
+            -76
+          ],
+          "rd_x": [
+            44,
+            -84
+          ],
+          "rd_y": [
+            36,
+            -76
+          ],
+          "station_name": "H",
+          "x": 40,
+          "y": -80
+        },
+        {
+          "ld_x": [
+            16,
+            -44
+          ],
+          "ld_y": [
+            24,
+            -36
+          ],
+          "rd_x": [
+            24,
+            -44
+          ],
+          "rd_y": [
+            16,
+            -36
+          ],
+          "station_name": "I",
+          "x": 20,
+          "y": -40
+        },
+        {
+          "ld_x": [
+            56,
+            -44
+          ],
+          "ld_y": [
+            64,
+            -36
+          ],
+          "rd_x": [
+            64,
+            -44
+          ],
+          "rd_y": [
+            56,
+            -36
+          ],
+          "station_name": "J",
+          "x": 60,
+          "y": -40
+        }
+      ],
+      "getFillColor": [
+        245,
+        245,
+        245
+      ],
+      "getPosition": "@@=[x, y]",
+      "getRadius": 6.0,
+      "id": "65e22146-a53d-4fa5-ae96-591343568ce2"
+    },
+    {
+      "@@type": "ScatterplotLayer",
+      "data": [
+        {
+          "x": 80,
+          "y": -40
+        }
+      ],
+      "getFillColor": [
+        213,
+        232,
+        212
+      ],
+      "getPosition": "@@=[x, y]",
+      "getRadius": 6.0,
+      "id": "91a8275e-5f8b-4a57-acdb-27cbea146a5c"
+    },
+    {
+      "@@type": "PathLayer",
+      "coodinateSystem": "@@=CARTESIAN",
+      "data": [
+        {
+          "color": [
+            14,
+            181,
+            174
+          ],
+          "name": "[Point(x=42, y=18), Point(x=42, y=28), Point(x=42, y=48)]",
+          "path": [
+            [
+              84,
+              -36
+            ],
+            [
+              84,
+              -56
+            ],
+            [
+              84,
+              -96
+            ]
+          ],
+          "width": 2.0
+        },
+        {
+          "color": [
+            64,
+            70,
+            202
+          ],
+          "name": "[Point(x=38, y=22), Point(x=28, y=22), Point(x=18, y=22), Point(x=18, y=42), Point(x=18, y=52)]",
+          "path": [
+            [
+              76,
+              -44
+            ],
+            [
+              56,
+              -44
+            ],
+            [
+              36,
+              -44
+            ],
+            [
+              36,
+              -84
+            ],
+            [
+              36,
+              -104
+            ]
+          ],
+          "width": 2.0
+        },
+        {
+          "color": [
+            246,
+            133,
+            18
+          ],
+          "name": "[Point(x=41, y=19), Point(x=31, y=19), Point(x=21, y=19), Point(x=11, y=19)]",
+          "path": [
+            [
+              82,
+              -38
+            ],
+            [
+              62,
+              -38
+            ],
+            [
+              42,
+              -38
+            ],
+            [
+              22,
+              -38
+            ]
+          ],
+          "width": 2.0
+        },
+        {
+          "color": [
+            126,
+            132,
+            250
+          ],
+          "name": "[Point(x=40, y=20), Point(x=40, y=30), Point(x=40, y=50), Point(x=20, y=50), Point(x=20, y=40), Point(x=50, y=40)]",
+          "path": [
+            [
+              80,
+              -40
+            ],
+            [
+              80,
+              -60
+            ],
+            [
+              80,
+              -100
+            ],
+            [
+              40,
+              -100
+            ],
+            [
+              40,
+              -80
+            ],
+            [
+              100,
+              -80
+            ]
+          ],
+          "width": 2.0
+        },
+        {
+          "color": [
+            222,
+            61,
+            130
+          ],
+          "name": "[Point(x=39, y=21), Point(x=39, y=31), Point(x=-1, y=31)]",
+          "path": [
+            [
+              78,
+              -42
+            ],
+            [
+              78,
+              -62
+            ],
+            [
+              -2,
+              -62
+            ]
+          ],
+          "width": 0.6666666666666666
+        }
+      ],
+      "getColor": "@@=color",
+      "getWidth": "@@=width",
+      "id": "8929614a-21c7-4326-8567-b65ba5337fd2",
+      "widthMaxPixels": "@@=width",
+      "widthMinPixels": "@@=width",
+      "widthUnit": "pixels"
+    },
+    {
+      "@@type": "PathLayer",
+      "data": [
+        {
+          "ld_x": [
+            76,
+            -44
+          ],
+          "ld_y": [
+            84,
+            -36
+          ],
+          "rd_x": [
+            84,
+            -44
+          ],
+          "rd_y": [
+            76,
+            -36
+          ],
+          "station_name": "Root",
+          "x": 80,
+          "y": -40
+        },
+        {
+          "ld_x": [
+            76,
+            -4
+          ],
+          "ld_y": [
+            84,
+            4
+          ],
+          "rd_x": [
+            84,
+            -4
+          ],
+          "rd_y": [
+            76,
+            4
+          ],
+          "station_name": "A",
+          "x": 80,
+          "y": 0
+        },
+        {
+          "ld_x": [
+            96,
+            -84
+          ],
+          "ld_y": [
+            104,
+            -76
+          ],
+          "rd_x": [
+            104,
+            -84
+          ],
+          "rd_y": [
+            96,
+            -76
+          ],
+          "station_name": "B",
+          "x": 100,
+          "y": -80
+        },
+        {
+          "ld_x": [
+            76,
+            -64
+          ],
+          "ld_y": [
+            84,
+            -56
+          ],
+          "rd_x": [
+            84,
+            -64
+          ],
+          "rd_y": [
+            76,
+            -56
+          ],
+          "station_name": "C",
+          "x": 80,
+          "y": -60
+        },
+        {
+          "ld_x": [
+            76,
+            -104
+          ],
+          "ld_y": [
+            84,
+            -96
+          ],
+          "rd_x": [
+            84,
+            -104
+          ],
+          "rd_y": [
+            76,
+            -96
+          ],
+          "station_name": "D",
+          "x": 80,
+          "y": -100
+        },
+        {
+          "ld_x": [
+            36,
+            -104
+          ],
+          "ld_y": [
+            44,
+            -96
+          ],
+          "rd_x": [
+            44,
+            -104
+          ],
+          "rd_y": [
+            36,
+            -96
+          ],
+          "station_name": "E",
+          "x": 40,
+          "y": -100
+        },
+        {
+          "ld_x": [
+            -4,
+            -64
+          ],
+          "ld_y": [
+            4,
+            -56
+          ],
+          "rd_x": [
+            4,
+            -64
+          ],
+          "rd_y": [
+            -4,
+            -56
+          ],
+          "station_name": "F",
+          "x": 0,
+          "y": -60
+        },
+        {
+          "ld_x": [
+            36,
+            -44
+          ],
+          "ld_y": [
+            44,
+            -36
+          ],
+          "rd_x": [
+            44,
+            -44
+          ],
+          "rd_y": [
+            36,
+            -36
+          ],
+          "station_name": "G",
+          "x": 40,
+          "y": -40
+        },
+        {
+          "ld_x": [
+            36,
+            -84
+          ],
+          "ld_y": [
+            44,
+            -76
+          ],
+          "rd_x": [
+            44,
+            -84
+          ],
+          "rd_y": [
+            36,
+            -76
+          ],
+          "station_name": "H",
+          "x": 40,
+          "y": -80
+        },
+        {
+          "ld_x": [
+            16,
+            -44
+          ],
+          "ld_y": [
+            24,
+            -36
+          ],
+          "rd_x": [
+            24,
+            -44
+          ],
+          "rd_y": [
+            16,
+            -36
+          ],
+          "station_name": "I",
+          "x": 20,
+          "y": -40
+        },
+        {
+          "ld_x": [
+            56,
+            -44
+          ],
+          "ld_y": [
+            64,
+            -36
+          ],
+          "rd_x": [
+            64,
+            -44
+          ],
+          "rd_y": [
+            56,
+            -36
+          ],
+          "station_name": "J",
+          "x": 60,
+          "y": -40
+        }
+      ],
+      "getColor": [
+        128,
+        128,
+        128,
+        229.5
+      ],
+      "getPath": "@@=[ld_x, ld_y]",
+      "getWidth": 1,
+      "id": "06e92bbd-ef8d-4fe6-aa0c-c8509b4276b6",
+      "rounded": true
+    },
+    {
+      "@@type": "PathLayer",
+      "data": [
+        {
+          "ld_x": [
+            76,
+            -44
+          ],
+          "ld_y": [
+            84,
+            -36
+          ],
+          "rd_x": [
+            84,
+            -44
+          ],
+          "rd_y": [
+            76,
+            -36
+          ],
+          "station_name": "Root",
+          "x": 80,
+          "y": -40
+        },
+        {
+          "ld_x": [
+            76,
+            -4
+          ],
+          "ld_y": [
+            84,
+            4
+          ],
+          "rd_x": [
+            84,
+            -4
+          ],
+          "rd_y": [
+            76,
+            4
+          ],
+          "station_name": "A",
+          "x": 80,
+          "y": 0
+        },
+        {
+          "ld_x": [
+            96,
+            -84
+          ],
+          "ld_y": [
+            104,
+            -76
+          ],
+          "rd_x": [
+            104,
+            -84
+          ],
+          "rd_y": [
+            96,
+            -76
+          ],
+          "station_name": "B",
+          "x": 100,
+          "y": -80
+        },
+        {
+          "ld_x": [
+            76,
+            -64
+          ],
+          "ld_y": [
+            84,
+            -56
+          ],
+          "rd_x": [
+            84,
+            -64
+          ],
+          "rd_y": [
+            76,
+            -56
+          ],
+          "station_name": "C",
+          "x": 80,
+          "y": -60
+        },
+        {
+          "ld_x": [
+            76,
+            -104
+          ],
+          "ld_y": [
+            84,
+            -96
+          ],
+          "rd_x": [
+            84,
+            -104
+          ],
+          "rd_y": [
+            76,
+            -96
+          ],
+          "station_name": "D",
+          "x": 80,
+          "y": -100
+        },
+        {
+          "ld_x": [
+            36,
+            -104
+          ],
+          "ld_y": [
+            44,
+            -96
+          ],
+          "rd_x": [
+            44,
+            -104
+          ],
+          "rd_y": [
+            36,
+            -96
+          ],
+          "station_name": "E",
+          "x": 40,
+          "y": -100
+        },
+        {
+          "ld_x": [
+            -4,
+            -64
+          ],
+          "ld_y": [
+            4,
+            -56
+          ],
+          "rd_x": [
+            4,
+            -64
+          ],
+          "rd_y": [
+            -4,
+            -56
+          ],
+          "station_name": "F",
+          "x": 0,
+          "y": -60
+        },
+        {
+          "ld_x": [
+            36,
+            -44
+          ],
+          "ld_y": [
+            44,
+            -36
+          ],
+          "rd_x": [
+            44,
+            -44
+          ],
+          "rd_y": [
+            36,
+            -36
+          ],
+          "station_name": "G",
+          "x": 40,
+          "y": -40
+        },
+        {
+          "ld_x": [
+            36,
+            -84
+          ],
+          "ld_y": [
+            44,
+            -76
+          ],
+          "rd_x": [
+            44,
+            -84
+          ],
+          "rd_y": [
+            36,
+            -76
+          ],
+          "station_name": "H",
+          "x": 40,
+          "y": -80
+        },
+        {
+          "ld_x": [
+            16,
+            -44
+          ],
+          "ld_y": [
+            24,
+            -36
+          ],
+          "rd_x": [
+            24,
+            -44
+          ],
+          "rd_y": [
+            16,
+            -36
+          ],
+          "station_name": "I",
+          "x": 20,
+          "y": -40
+        },
+        {
+          "ld_x": [
+            56,
+            -44
+          ],
+          "ld_y": [
+            64,
+            -36
+          ],
+          "rd_x": [
+            64,
+            -44
+          ],
+          "rd_y": [
+            56,
+            -36
+          ],
+          "station_name": "J",
+          "x": 60,
+          "y": -40
+        }
+      ],
+      "getColor": [
+        128,
+        128,
+        128,
+        229.5
+      ],
+      "getPath": "@@=[rd_x, rd_y]",
+      "getWidth": 1,
+      "id": "772d8635-3d3a-4d21-a3d7-0dda732a1e5c",
+      "rounded": true
+    },
+    {
+      "@@type": "ScatterplotLayer",
+      "data": [
+        {
+          "path": [
+            84,
+            -96
+          ]
+        },
+        {
+          "path": [
+            36,
+            -104
+          ]
+        },
+        {
+          "path": [
+            22,
+            -38
+          ]
+        },
+        {
+          "path": [
+            100,
+            -80
+          ]
+        },
+        {
+          "path": [
+            -2,
+            -62
+          ]
+        }
+      ],
+      "getFillColor": [
+        253,
+        201,
+        75
+      ],
+      "getPosition": "@@=path",
+      "getRadius": 1,
+      "id": "1ebc8954-b131-4b65-be70-f8efe2a94850"
+    },
+    {
+      "@@type": "TextLayer",
+      "data": [
+        {
+          "ld_x": [
+            76,
+            -44
+          ],
+          "ld_y": [
+            84,
+            -36
+          ],
+          "rd_x": [
+            84,
+            -44
+          ],
+          "rd_y": [
+            76,
+            -36
+          ],
+          "station_name": "Root",
+          "x": 80,
+          "y": -40
+        },
+        {
+          "ld_x": [
+            76,
+            -4
+          ],
+          "ld_y": [
+            84,
+            4
+          ],
+          "rd_x": [
+            84,
+            -4
+          ],
+          "rd_y": [
+            76,
+            4
+          ],
+          "station_name": "A",
+          "x": 80,
+          "y": 0
+        },
+        {
+          "ld_x": [
+            96,
+            -84
+          ],
+          "ld_y": [
+            104,
+            -76
+          ],
+          "rd_x": [
+            104,
+            -84
+          ],
+          "rd_y": [
+            96,
+            -76
+          ],
+          "station_name": "B",
+          "x": 100,
+          "y": -80
+        },
+        {
+          "ld_x": [
+            76,
+            -64
+          ],
+          "ld_y": [
+            84,
+            -56
+          ],
+          "rd_x": [
+            84,
+            -64
+          ],
+          "rd_y": [
+            76,
+            -56
+          ],
+          "station_name": "C",
+          "x": 80,
+          "y": -60
+        },
+        {
+          "ld_x": [
+            76,
+            -104
+          ],
+          "ld_y": [
+            84,
+            -96
+          ],
+          "rd_x": [
+            84,
+            -104
+          ],
+          "rd_y": [
+            76,
+            -96
+          ],
+          "station_name": "D",
+          "x": 80,
+          "y": -100
+        },
+        {
+          "ld_x": [
+            36,
+            -104
+          ],
+          "ld_y": [
+            44,
+            -96
+          ],
+          "rd_x": [
+            44,
+            -104
+          ],
+          "rd_y": [
+            36,
+            -96
+          ],
+          "station_name": "E",
+          "x": 40,
+          "y": -100
+        },
+        {
+          "ld_x": [
+            -4,
+            -64
+          ],
+          "ld_y": [
+            4,
+            -56
+          ],
+          "rd_x": [
+            4,
+            -64
+          ],
+          "rd_y": [
+            -4,
+            -56
+          ],
+          "station_name": "F",
+          "x": 0,
+          "y": -60
+        },
+        {
+          "ld_x": [
+            36,
+            -44
+          ],
+          "ld_y": [
+            44,
+            -36
+          ],
+          "rd_x": [
+            44,
+            -44
+          ],
+          "rd_y": [
+            36,
+            -36
+          ],
+          "station_name": "G",
+          "x": 40,
+          "y": -40
+        },
+        {
+          "ld_x": [
+            36,
+            -84
+          ],
+          "ld_y": [
+            44,
+            -76
+          ],
+          "rd_x": [
+            44,
+            -84
+          ],
+          "rd_y": [
+            36,
+            -76
+          ],
+          "station_name": "H",
+          "x": 40,
+          "y": -80
+        },
+        {
+          "ld_x": [
+            16,
+            -44
+          ],
+          "ld_y": [
+            24,
+            -36
+          ],
+          "rd_x": [
+            24,
+            -44
+          ],
+          "rd_y": [
+            16,
+            -36
+          ],
+          "station_name": "I",
+          "x": 20,
+          "y": -40
+        },
+        {
+          "ld_x": [
+            56,
+            -44
+          ],
+          "ld_y": [
+            64,
+            -36
+          ],
+          "rd_x": [
+            64,
+            -44
+          ],
+          "rd_y": [
+            56,
+            -36
+          ],
+          "station_name": "J",
+          "x": 60,
+          "y": -40
+        }
+      ],
+      "getAlignmentBaseline": "center",
+      "getAngle": 0,
+      "getColor": [
+        0,
+        0,
+        0
+      ],
+      "getPosition": "@@=[x, y]",
+      "getSize": 24,
+      "getText": "@@=station_name",
+      "getTextAnchor": "middle",
+      "id": "1c06361c-0251-40a6-ae84-f4b7364ab1ec"
+    }
+  ],
+  "mapStyle": "dark",
+  "views": [
+    {
+      "@@type": "OrthographicView",
+      "controller": true
+    }
+  ]
+};
+    const tooltip = true;
+    const customLibraries = null;
+    const configuration = null;
+
+    const deckInstance = createDeck({
+                  container,
+      jsonInput,
+      tooltip,
+      customLibraries,
+      configuration
+    });
+
+  </script>
+</html>
