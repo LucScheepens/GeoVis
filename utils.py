@@ -2,6 +2,7 @@ import abc
 import dataclasses
 
 import numpy as np
+import math
 
 SlotPosition = str
 SLOTS: list[str] = ["S1", "S2", "S3", "S4", "S5"]
@@ -17,10 +18,27 @@ FlowPathsWithSlotsT = list[  # list of paths and their configurations
 ]
 
 
+
 @dataclasses.dataclass
+
 class Point:
     x: float
     y: float
+    
+    def angle_with(self, other_point):
+        """
+        Calculate the angle between two points.
+
+        Parameters:
+            other_point (Point): The other point to calculate the angle with.
+
+        Returns:
+            float: The angle in radians.
+        """
+        dx = other_point.x - self.x
+        dy = other_point.y - self.y
+        return math.atan2(dy, dx)
+
 
 
 @dataclasses.dataclass
