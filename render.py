@@ -157,7 +157,6 @@ def render(data: LayoutOutput, stations: dict[str, Point], output_path: Path = N
     if output_path is None:
         output_path = Path("assets/render.html")
 
-
     # Define the initial viewport
     view_state = ViewState(target=[0, 0, 0], zoom=2)
 

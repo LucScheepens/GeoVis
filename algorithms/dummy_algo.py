@@ -3,7 +3,8 @@ from itertools import product
 from algorithms.dynamic_ranges import generate_slots
 from path_slot_configuration_generator import generate_configuration
 from utils import Point, LayoutAlgorithm, FlowPathsT, LayoutOutput, count_intersections, total_overlap_ratio, \
-    combination_to_coordinates
+    combination_to_coordinates, calculate_frequency_bins, combination_to_coordinates_with_width
+
 
 # Done: Output must include the frequency of each path
 # TODO: Number of slots should be calculated dynamically
@@ -53,12 +54,15 @@ class DummyAlgorithm(LayoutAlgorithm):
         return "dummy"
 
     def find_optimal_layout(self, flow_paths: FlowPathsT, stations: dict[str, Point]) -> LayoutOutput:
-        # Generate slot coordinates
-        # slot_coordinates = {}
-        # for station_name, point in stations.items():
-        #     for slot in SLOTS:
-        #         offset_x, offset_y = SLOT_OFFSETS[slot]
-        #         slot_coordinates[(station_name, slot)] = Point(point.x + offset_x, point.y + offset_y)
+        bins = calculate_frequency_bins(flow_paths, 3)
+        tmp = []
+        for freq, flow_path in flow_paths:
+            width_scaler = next(filter(lambda x: freq in x[0], bins))[1]
+            tmp.append(
+                (width_scaler, flow_path)
+            )
+
+        flow_paths = tmp
 
         # Generate the slots
         slots_with_coordinates = generate_slots(flow_paths)
@@ -83,8 +87,10 @@ class DummyAlgorithm(LayoutAlgorithm):
 
         best_combination = min(valid_configurations, key=lambda x: score_combination(x, flow_paths, slot_coordinates))
 
+        layout = combination_to_coordinates_with_width(best_combination, flow_paths, slot_coordinates)
+
         return LayoutOutput(
             number_of_intersections=count_intersections(combination_to_coordinates(best_combination, slot_coordinates)),
             area_of_overlap=total_overlap_ratio(best_combination,flow_paths,slot_coordinates),
-            layout=list(map(lambda x: (1, x), combination_to_coordinates(best_combination, slot_coordinates)))
+            layout=layout
         )

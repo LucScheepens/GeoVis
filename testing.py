@@ -41,7 +41,7 @@ def main(
             flow_path_count=5,
             max_flow_path_length=3,
             min_flow_path_frequency=1,
-            max_flow_path_frequency=1
+            max_flow_path_frequency=100
         )
 
         # Save the metro layout to the file

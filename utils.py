@@ -103,7 +103,7 @@ def count_intersections(lines):
     return count
 
 
-def coords_widths(combination, flow_paths, slot_coordinates):
+def combination_to_coordinates_with_width(combination, flow_paths, slot_coordinates):
     """Transforms a combination into a tuple with its coordinates and width"""
     coords_widths = []
     for width, path_list in flow_paths:
@@ -113,7 +113,8 @@ def coords_widths(combination, flow_paths, slot_coordinates):
             for item in sublist:
                 path_in_comb.append(item[0])
             if path_list == path_in_comb:
-                coords_widths.append((coords[i], width))
+                coords_widths.append((width, coords[i]))
+
     return coords_widths
 
 
@@ -211,11 +212,28 @@ def total_area(rectangles):
 
 def total_overlap_ratio(combination, flow_paths, slot_coordinates):
     """Calculate the ratio of total overlap"""
-    comb_width = coords_widths(combination, flow_paths, slot_coordinates)
+    comb_width = combination_to_coordinates_with_width(combination, flow_paths, slot_coordinates)
     rect_comb = []  # a list of lists with rectangles, representing the lines
     total_overlap = 0
-    for line, width in comb_width:
+    for width, line in comb_width:
         rectangles = line_to_rectangles(line, width)
         rect_comb.append(rectangles)
         total_overlap += total_area(rectangles)
     return line_overlap(rect_comb) / total_overlap
+
+
+def calculate_frequency_bins(flow_paths: FlowPathsT, bin_count: int) -> list[(range, float)]:
+    """ Calculate bins so that in each bin there is an equal amount of elements based on the frequency and then list of ranges and scaler for each bin"""
+    frequencies = [path[0] for path in flow_paths]
+    max_freq = max(frequencies)
+    min_freq = min(frequencies)
+    bin_size = (max_freq - min_freq) / bin_count
+    bins = []
+    for i in range(bin_count):
+        lower_bound = int(min_freq + i * bin_size) if i != 0 else min_freq - 1
+        upper_bound = int(min_freq + (i + 1) * bin_size) if i != bin_count - 1 else max_freq + 1
+        width_scaler = 2 * (1 / (bin_count - i))
+
+        bins.append((range(lower_bound, upper_bound, 1), width_scaler))
+
+    return bins
