@@ -7,6 +7,7 @@ import pandas as pd
 
 from algorithms.dummy_algo import DummyAlgorithm
 from algorithms.dynamic_ranges import DynamicRanges
+from algorithms.directional_alg import DirectionalAlg
 from render import render
 from test_data_generator import generate_fake_metro, plot_metro_layout
 from utils import LayoutAlgorithm
@@ -23,7 +24,8 @@ def main(
 ):
     algorithms: [LayoutAlgorithm] = [
         DummyAlgorithm(),
-        DynamicRanges()
+        DynamicRanges(),
+        DirectionalAlg()
     ]
 
     test_dir = ASSET_PATH / test_id
@@ -80,7 +82,7 @@ def main(
 
 if __name__ == "__main__":
     main(
-        "test-4",
+        "test-1",
         1,
         10,
         10,
