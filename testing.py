@@ -60,9 +60,9 @@ def main(
 
 if __name__ == "__main__":
     main(
-        "test-3",
+        "test-4",
         1,
-        10,
+        26,
         10,
         5
     )

@@ -271,46 +271,43 @@ class DirectionalAlg(LayoutAlgorithm):
             sorted_dict = dict(sorted(my_dict.items(), key=lambda item: item[1], reverse=True))
 
             for key, angle in sorted_dict.items():
-                    if angle >= 0 and angle <= 0.5 * math.pi:
-                        # top right
-                        max_y_pair_pos_x = max(SLOT_OFFSETS.items(), key=lambda item: item[1][1] if item[1][0] > 0 else float("-inf"))
-                        value = SLOT_OFFSETS.pop(max_y_pair_pos_x[0])
-                        slot_assigned[key] = max_y_pair_pos_x[0]
-                        # print(f"Angle {angle} for key {key} is between 0 and 0.5*pi")
+                if angle >= 0 and angle <= 0.5 * math.pi:
+                    # top right
+                    max_y_pair_pos_x = max(SLOT_OFFSETS.items(), key=lambda item: item[1][1] if item[1][0] > 0 else float("-inf"))
+                    value = SLOT_OFFSETS.pop(max_y_pair_pos_x[0])
+                    slot_assigned[key] = max_y_pair_pos_x[0]
+                    # print(f"Angle {angle} for key {key} is between 0 and 0.5*pi")
 
-                    elif angle > 0.5 * math.pi and angle <= math.pi:
-                        #top left
-                        max_y_pair_neg_x = max(SLOT_OFFSETS.items(), key=lambda item: item[1][1] if item[1][0] < 0 else float("-inf"))
-                        value = SLOT_OFFSETS.pop(max_y_pair_neg_x[0])
-                        slot_assigned[key] = max_y_pair_neg_x[0]
-                        # print(f"Angle {angle} for key {key} is between 0.5*pi and pi")
+                elif angle > 0.5 * math.pi and angle <= math.pi:
+                    #top left
+                    max_y_pair_neg_x = max(SLOT_OFFSETS.items(), key=lambda item: item[1][1] if item[1][0] < 0 else float("-inf"))
+                    value = SLOT_OFFSETS.pop(max_y_pair_neg_x[0])
+                    slot_assigned[key] = max_y_pair_neg_x[0]
+                    # print(f"Angle {angle} for key {key} is between 0.5*pi and pi")
 
-                    elif angle < 0 and angle >= -0.5 * math.pi:
-                        #bot right
-                        min_y_pair_pos_x = min(SLOT_OFFSETS.items(), key=lambda item: item[1][1] if item[1][0] > 0 else float("-inf"))
-                        value = SLOT_OFFSETS.pop(min_y_pair_pos_x[0])
-                        slot_assigned[key] = min_y_pair_pos_x[0]
-                        # print(f"Angle {angle} for key {key} is between 0 and -0.5*pi")
+                elif angle < 0 and angle >= -0.5 * math.pi:
+                    #bot right
+                    min_y_pair_pos_x = min(SLOT_OFFSETS.items(), key=lambda item: item[1][1] if item[1][0] > 0 else float("-inf"))
+                    value = SLOT_OFFSETS.pop(min_y_pair_pos_x[0])
+                    slot_assigned[key] = min_y_pair_pos_x[0]
+                    # print(f"Angle {angle} for key {key} is between 0 and -0.5*pi")
 
-                    elif angle < -0.5 * math.pi and angle >= -math.pi:
-                        #bot left
-                        min_y_pair_neg_x = min(SLOT_OFFSETS.items(), key=lambda item: item[1][1] if item[1][0] < 0 else float("-inf"))
-                        value = SLOT_OFFSETS.pop(min_y_pair_neg_x[0])
-                        slot_assigned[key] = min_y_pair_neg_x[0]
-                        # print(f"Angle {angle} for key {key} is between -0.5*pi and -pi")    
+                elif angle < -0.5 * math.pi and angle >= -math.pi:
+                    #bot left
+                    min_y_pair_neg_x = min(SLOT_OFFSETS.items(), key=lambda item: item[1][1] if item[1][0] < 0 else float("-inf"))
+                    value = SLOT_OFFSETS.pop(min_y_pair_neg_x[0])
+                    slot_assigned[key] = min_y_pair_neg_x[0]
+                    # print(f"Angle {angle} for key {key} is between -0.5*pi and -pi")    
 
         best_stations_with_slots = map_path_keys_to_stations(slot_assigned)
         combination_merged = convert_to_list_of_tuples(best_stations_with_slots)
-        print(combination_merged)
 
-        #TODO fix deze functie call, hij maakt teveel punten, kut python
         combinations_points = obtain_points_from_keys(combination_merged,slot_coordinates)
-        print(combinations_points)
+
         intersections = count_intersections(combination_to_coordinates(combination_merged, slot_coordinates))
 
         layout = list(map(lambda x: (1, x), combinations_points))
-        print(f'layout is equal to {layout}')
-        # return combination_merged
+
         return LayoutOutput(
             number_of_intersections=intersections, 
             area_of_overlap=0,
