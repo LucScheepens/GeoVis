@@ -25,7 +25,7 @@ def main(
     algorithms: [LayoutAlgorithm] = [
         DynamicRanges(),
         DirectionalAlg(),
-        DummyAlgorithm(),
+        # DummyAlgorithm(),
     ]
 
     test_dir = ASSET_PATH / test_id

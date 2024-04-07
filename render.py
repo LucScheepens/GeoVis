@@ -34,20 +34,20 @@ def render_stations(stations: dict[str, Point]) -> [pdk.Layer]:
 
     # Create a data frame
     data = pd.DataFrame(stations, columns=['station_name', 'x', 'y', 'ld_x', 'ld_y', 'rd_x', 'rd_y'])
-    return [
+    return (
         pdk.Layer(
             type="ScatterplotLayer",
             data=data,
             get_position="[x, y]",
             get_radius=UNITS*1.5,
-            get_fill_color=(255, 242, 204, 255 * 0.25),
+            get_fill_color=(245, 245, 245),
         ),
         pdk.Layer(
             'PathLayer',
             data,
             get_path='[ld_x, ld_y]',
             get_width=1,
-            get_color=[128, 128, 128, 128],
+            get_color=[128, 128, 128, 255*0.9],
             rounded=True,
         ),
         pdk.Layer(
@@ -55,28 +55,21 @@ def render_stations(stations: dict[str, Point]) -> [pdk.Layer]:
             data,
             get_path='[rd_x, rd_y]',
             get_width=1,
-            get_color=[128, 128, 128, 128],
+            get_color=[128, 128, 128, 255*0.9],
             rounded=True,
         ),
-        # pdk.Layer(
-        #     'ScatterplotLayer',
-        #     data,
-        #     get_position='[x, y]',
-        #     get_radius=0.5,
-        #     get_fill_color=[72, 72, 72],
-        # ),
         pdk.Layer(
             'TextLayer',
             data,
             get_position='[x, y]',
             get_text='station_name',
-            get_size=12,  # Increase text size
-            get_color=[255, 255, 255],
+            get_size=16,  # Increase text size
+            get_color=[0, 0, 0],
             get_angle=0,
             get_text_anchor=String("middle"),
             get_alignment_baseline=String("center"),
         ),
-    ]
+    )
 
 
 def render_flow_paths(data: LayoutOutput):
@@ -108,21 +101,29 @@ def render_flow_paths(data: LayoutOutput):
     layer = pdk.Layer(
         type="PathLayer",
         data=df,
-        pickable=True,
+        # pickable=True,
         get_color="color",
         width_unit='"pixels"',
         width_min_pixels="width",
         width_max_pixels="width",
         get_width="width",
-        rounded=True,
+        # rounded=True,
         coodinate_system="CARTESIAN",
     )
 
     # Add arrow heads to the end of each path
-    # end_coordinates = pd.DataFrame(df["path"].apply(lambda x: x[-1]))
+    end_coordinates = pd.DataFrame(df["path"].apply(lambda x: x[-1]))
     # end_coordinates["icon_data"] = None
     # for i in end_coordinates.index:
     #     end_coordinates["icon_data"][i] = icon_data
+
+    end_pins = pdk.Layer(
+        type="ScatterplotLayer",
+        data=end_coordinates,
+        get_position="path",
+        get_radius=1,
+        get_fill_color=(253, 201, 75),
+    )
 
     # arrow_layer = pdk.Layer(
     #     type="IconLayer",
@@ -135,13 +136,7 @@ def render_flow_paths(data: LayoutOutput):
     # )
 
 
-    return [layer]
-
-
-def hex_to_rgb(h):
-    h = h.lstrip("#")
-    return tuple(int(h[i: i + 2], 16) for i in (0, 2, 4))
-
+    return (layer, end_pins)
 
 def render(data: LayoutOutput, stations: dict[str, Point], output_path: Path = None):
     if output_path is None:
@@ -160,14 +155,15 @@ def render(data: LayoutOutput, stations: dict[str, Point], output_path: Path = N
         }),
         get_position="[x, y]",
         get_radius=UNITS*1.5,
-        get_fill_color=(255, 242, 204, 255 * 0.95),
+        # get_fill_color=(255, 242, 204, 255 * 0.95),
+        get_fill_color=(213, 232, 212),
     )
 
     # Render the flow paths
-    flow_paths_layer = render_flow_paths(data)
+    flow_paths_layer, end_points  = render_flow_paths(data)
 
     # Render the deck
-    stations_layers = render_stations(stations)
+    station_circles, diagonal_a, diagonal_b, stations_name = render_stations(stations)
 
     view = View(
         type="OrthographicView",
@@ -175,9 +171,14 @@ def render(data: LayoutOutput, stations: dict[str, Point], output_path: Path = N
     )
 
     r = pdk.Deck(layers=[
+        station_circles,
         root_circle,
-        *flow_paths_layer,
-        *stations_layers
+        flow_paths_layer,
+        diagonal_a,
+        diagonal_b,
+        end_points,
+        stations_name
+        # *stations_layers
     ], views=[view], initial_view_state=view_state,  map_provider=None)
     r.to_html(output_path)
 
