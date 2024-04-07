@@ -78,6 +78,7 @@ def main(
 
     print(avg_df)
 
+    avg_df.to_csv(test_dir / "average_statistics.csv")
     df.to_csv(test_dir / "statistics.csv")
 
 

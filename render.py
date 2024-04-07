@@ -98,6 +98,10 @@ def render_flow_paths(data: LayoutOutput):
 
     # Create a data frame
     df = pd.DataFrame.from_records(flow_paths)
+
+    # sort by width
+    df = df.sort_values(by="width", ascending=False)
+
     # df["color"] = df["color"].apply(hex_to_rgb)
 
     # Define a line layer
