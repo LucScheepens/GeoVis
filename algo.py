@@ -236,8 +236,9 @@ def convert_to_list_of_tuples(input_data):
     return output_data
 
 def obtain_points_from_keys(combinations, slot_coordinates):
-    list_of_points, list_of_paths = [],[]
+    list_of_paths = []
     for path in combinations:
+        list_of_points = []
         for slot in path:
             list_of_points.append(slot_coordinates[slot])
         list_of_paths.append(list_of_points)
@@ -271,24 +272,28 @@ class DirectionalAlg(LayoutAlgorithm):
 
             for key, angle in sorted_dict.items():
                     if angle >= 0 and angle <= 0.5 * math.pi:
+                        # top right
                         max_y_pair_pos_x = max(SLOT_OFFSETS.items(), key=lambda item: item[1][1] if item[1][0] > 0 else float("-inf"))
                         value = SLOT_OFFSETS.pop(max_y_pair_pos_x[0])
                         slot_assigned[key] = max_y_pair_pos_x[0]
                         # print(f"Angle {angle} for key {key} is between 0 and 0.5*pi")
 
-                    elif angle >= 0.5 * math.pi and angle <= math.pi:
+                    elif angle > 0.5 * math.pi and angle <= math.pi:
+                        #top left
                         max_y_pair_neg_x = max(SLOT_OFFSETS.items(), key=lambda item: item[1][1] if item[1][0] < 0 else float("-inf"))
                         value = SLOT_OFFSETS.pop(max_y_pair_neg_x[0])
                         slot_assigned[key] = max_y_pair_neg_x[0]
                         # print(f"Angle {angle} for key {key} is between 0.5*pi and pi")
 
                     elif angle < 0 and angle >= -0.5 * math.pi:
+                        #bot right
                         min_y_pair_pos_x = min(SLOT_OFFSETS.items(), key=lambda item: item[1][1] if item[1][0] > 0 else float("-inf"))
                         value = SLOT_OFFSETS.pop(min_y_pair_pos_x[0])
                         slot_assigned[key] = min_y_pair_pos_x[0]
                         # print(f"Angle {angle} for key {key} is between 0 and -0.5*pi")
 
                     elif angle < -0.5 * math.pi and angle >= -math.pi:
+                        #bot left
                         min_y_pair_neg_x = min(SLOT_OFFSETS.items(), key=lambda item: item[1][1] if item[1][0] < 0 else float("-inf"))
                         value = SLOT_OFFSETS.pop(min_y_pair_neg_x[0])
                         slot_assigned[key] = min_y_pair_neg_x[0]
