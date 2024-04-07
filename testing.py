@@ -11,7 +11,9 @@ from render import render
 from test_data_generator import generate_fake_metro, plot_metro_layout
 from utils import LayoutAlgorithm
 
+pd.set_option('display.max_columns', None)
 ASSET_PATH = Path(__file__).parent / "assets"
+
 
 def main(
         test_id: str,
@@ -33,6 +35,7 @@ def main(
     statistics = []
 
     for n in range(num_of_iterations):
+        print(f"🔄 Running iteration {n}...")
         flow_paths, stations, df = generate_fake_metro(
             station_count=station_count,
             flow_path_count=5,
@@ -44,7 +47,9 @@ def main(
         # Save the metro layout to the file
         plot_metro_layout(df).savefig(test_dir / f"metro-layout-{n}.png")
 
+        print(f"🏃‍ Running algorithms on the generated metro system...")
         for algorithm in algorithms:
+            print(f"- Running algorithm {algorithm.name}...")
             (test_dir / algorithm.name).mkdir(exist_ok=True)
 
             # time the algorithm
@@ -61,10 +66,13 @@ def main(
                 "time_ms": delta_time_ms
             })
 
-    df = pd.DataFrame(statistics, columns=["algorithm", "iteration", "intersections", "covered_area"])
+    df = pd.DataFrame(statistics, columns=["algorithm", "iteration", "intersections", "covered_area", "time_ms"])
 
     # calculate the average of the statistics per algorithm
     avg_df = df.groupby("algorithm").mean()
+    avg_df['time_seconds'] = avg_df['time_ms'] / 1_000
+    avg_df['time_minutes'] = avg_df['time_seconds'] / 60
+
     print(avg_df)
 
     df.to_csv(test_dir / "statistics.csv")

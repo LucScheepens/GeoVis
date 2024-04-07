@@ -31,6 +31,7 @@ colors = [
     (220, 20, 60)    # Crimson
 ]
 
+
 def flow_path_template(width: int, points: [Point]) -> dict:
     color = random.choice(colors)
     colors.remove(color)
@@ -54,7 +55,6 @@ def render_stations(stations: dict[str, Point]) -> [pdk.Layer]:
 
     # Create a data frame
     data = pd.DataFrame(stations, columns=['station_name', 'x', 'y', 'ld_x', 'ld_y', 'rd_x', 'rd_y'])
-    print(data)
     return [
         pdk.Layer(
             'PathLayer',
@@ -171,7 +171,7 @@ def render(data: LayoutOutput, stations: dict[str, Point], output_path: Path = N
         }),
         get_position="[x, y]",
         get_radius=5,
-        get_fill_color=[51, 51, 51],
+        get_fill_color=(255, 242, 204, 255 * 0.7),
     )
 
     # Render the flow paths

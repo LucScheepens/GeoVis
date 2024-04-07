@@ -1,10 +1,8 @@
-import dataclasses
-import pickle
 from itertools import product
-import numpy as np
 
+from algorithms.dynamic_ranges import generate_slots
 from path_slot_configuration_generator import generate_configuration
-from utils import Point, LayoutAlgorithm, FlowPathsT, LayoutOutput, SLOTS, count_intersections, total_overlap_ratio, \
+from utils import Point, LayoutAlgorithm, FlowPathsT, LayoutOutput, count_intersections, total_overlap_ratio, \
     combination_to_coordinates
 
 # Done: Output must include the frequency of each path
@@ -14,32 +12,6 @@ from utils import Point, LayoutAlgorithm, FlowPathsT, LayoutOutput, SLOTS, count
 # Done: What is the lines overlap? How to calculate it?
 # TODO: Optimize the path to minimize the overlap
 #  -> E.g. by putting the thick line to side or by changing the slot offset
-
-# TODOL: Add input -> path coordinates
-
-SLOT_POSITIONS = ['S1', 'S2', 'S3', 'S4', 'S5']
-NODE_COORDINATES = {
-    'Root': Point(0, 0),
-    'A': Point(0, 10),
-    'C': Point(10, 10),
-    'F': Point(30, 10),
-    'G': Point(40, 10),
-    'H': Point(30, 20)
-}
-
-SLOT_OFFSETS = {
-    'S1': (0, 0),
-    'S2': (-1, 1),
-    'S3': (1, 1),
-    'S4': (-1, -1),
-    'S5': (1, -1)
-}
-
-# SLOT_COORDINATES = {}
-# for node, point in NODE_COORDINATES.items():
-#     for slot in SLOT_POSITIONS:
-#         offset_x, offset_y = SLOT_OFFSETS[slot]
-#         SLOT_COORDINATES[(node, slot)] = Point(point.x + offset_x, point.y + offset_y)
 
 
 def contains_equals(route1, route2):
@@ -52,15 +24,17 @@ def contains_equals(route1, route2):
     return False
 
 
-def identify_wrong_combos(dot_product):
+def select_valid_configurations(dot_product) -> list:
     """filter out combinations that have paths use the same slot at the same node"""
-    to_reject = []
+    # to_reject = set()
+    to_keep = []
     for configuration in dot_product:
         for i in range(len(configuration)):
             for j in range(i+1, len(configuration)):
-                if contains_equals(configuration[i], configuration[j]):
-                    to_reject.append(configuration)
-    return to_reject
+                if not contains_equals(configuration[i], configuration[j]):
+                    to_keep.append(configuration)
+
+    return to_keep
 
 
 # may be more interesting to do this differently than just adding them
@@ -80,33 +54,35 @@ class DummyAlgorithm(LayoutAlgorithm):
 
     def find_optimal_layout(self, flow_paths: FlowPathsT, stations: dict[str, Point]) -> LayoutOutput:
         # Generate slot coordinates
+        # slot_coordinates = {}
+        # for station_name, point in stations.items():
+        #     for slot in SLOTS:
+        #         offset_x, offset_y = SLOT_OFFSETS[slot]
+        #         slot_coordinates[(station_name, slot)] = Point(point.x + offset_x, point.y + offset_y)
+
+        # Generate the slots
+        slots_with_coordinates = generate_slots(flow_paths)
+
+        # Extract the slot names
+        slots = list(map(lambda x: x[0], slots_with_coordinates))
+
+        # Generate the slot offsets
         slot_coordinates = {}
         for station_name, point in stations.items():
-            for slot in SLOTS:
-                offset_x, offset_y = SLOT_OFFSETS[slot]
-                slot_coordinates[(station_name, slot)] = Point(point.x + offset_x, point.y + offset_y)
+            for slot_name, slot_pos in slots_with_coordinates:
+                slot_coordinates[(station_name, slot_name)] = Point(point.x + slot_pos[0], point.y + slot_pos[1])
 
         # Generate the configurations
-        config = generate_configuration(flow_paths)
+        config = generate_configuration(flow_paths, slots)
 
         # remove the frequency from the flow paths
         pos_comb = list(map(lambda x: list(map(lambda y: y[1],x)), config))
 
         configuration_dot_product = list(product(*pos_comb))
-        wrong_combos = identify_wrong_combos(configuration_dot_product)
+        valid_configurations = select_valid_configurations(configuration_dot_product)
 
-        valid_configurations = [element for element in configuration_dot_product if element not in wrong_combos]
+        best_combination = min(valid_configurations, key=lambda x: score_combination(x, flow_paths, slot_coordinates))
 
-        # # for testing
-        # print()
-        # for comb in valid_configurations:
-        #     print("number_of_intersections",count_intersections(combination_to_coordinates(comb, slot_coordinates)))
-        #     print("area_of_overlap", total_overlap_ratio(comb,flow_paths,slot_coordinates))
-        #     print("layout", list(map(lambda x: (1, x), combination_to_coordinates(comb, slot_coordinates))))
-        # print()
-
-        # determines the best combination using the score_combination function
-        best_combination = sorted(valid_configurations, key=lambda x: score_combination(x,flow_paths,slot_coordinates))[0]
         return LayoutOutput(
             number_of_intersections=count_intersections(combination_to_coordinates(best_combination, slot_coordinates)),
             area_of_overlap=total_overlap_ratio(best_combination,flow_paths,slot_coordinates),

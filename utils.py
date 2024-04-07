@@ -4,7 +4,7 @@ import dataclasses
 import numpy as np
 
 SlotPosition = str
-SLOTS: list[str] = ["S1", "S2", "S3", "S4", "S5"]
+# SLOTS: list[str] = ["S1", "S2", "S3", "S4", "S5"]
 
 FlowPathsT = list[tuple[int, list[str]]]
 FlowPathsWithSlotsT = list[  # list of paths and their configurations

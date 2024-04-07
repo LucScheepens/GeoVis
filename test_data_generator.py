@@ -183,6 +183,8 @@ def generate_fake_metro(
 
     :return: A tuple containing the flow paths, the station locations with their names and dataframe used for visualization.
     """
+    print("🚇 Generating fake metro system...")
+
     while True:
         station_names = gen_station_names(station_count)
         station_locations = gen_station_locations(station_names)
@@ -200,11 +202,18 @@ def generate_fake_metro(
         'Connected_to': station_connections
     })
 
-    generated_flow_paths = gen_paths(df_stations, flow_path_count, max_flow_path_length)
+    while True:
+        generated_flow_paths = gen_paths(df_stations, flow_path_count, max_flow_path_length)
+
+        #  Remove duplicates
+        if len(set(map(tuple, generated_flow_paths))) == flow_path_count:
+            break
+
     flow_paths_with_frequency = map(
         lambda flow_path: (random.randint(min_flow_path_frequency, max_flow_path_frequency), flow_path),
         generated_flow_paths)
 
+    print("🚇 Fake metro system generated!")
     return (
         list(flow_paths_with_frequency),
         {station_name: Point(x, y) for station_name, (x, y) in zip(station_names, station_locations)},
