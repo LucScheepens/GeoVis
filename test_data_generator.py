@@ -7,7 +7,7 @@ import networkx as nx
 import random
 import matplotlib.pyplot as plt
 
-from utils import FlowPathsT, Point
+from utils import FlowPathsT, Point, COLORS
 
 SCALER = 10
 
@@ -195,25 +195,26 @@ def generate_fake_metro(
                                                                                                  station_locations)
 
         # If the root is not connected to anything, we need to regenerate the stations
-        if 'Root' in station_names:
-            break
+        if 'Root' not in station_names:
+            continue
 
-    df_stations = pd.DataFrame({
-        'Station_names': station_names,
-        'Station_locations': station_locations,
-        'Connected_to': station_connections
-    })
+        df_stations = pd.DataFrame({
+            'Station_names': station_names,
+            'Station_locations': station_locations,
+            'Connected_to': station_connections
+        })
 
-    while True:
         generated_flow_paths = gen_paths(df_stations, flow_path_count, max_flow_path_length)
 
         #  Remove duplicates
-        if len(set(map(tuple, generated_flow_paths))) == flow_path_count:
-            break
+        if len(set(map(tuple, generated_flow_paths))) != flow_path_count:
+            continue
+
+        break
 
     flow_paths_with_frequency = map(
-        lambda flow_path: (random.randint(min_flow_path_frequency, max_flow_path_frequency), flow_path),
-        generated_flow_paths)
+        lambda x: (random.randint(min_flow_path_frequency, max_flow_path_frequency), x[1], COLORS[x[0]]),
+        enumerate(generated_flow_paths))
 
     print("🚇 Fake metro system generated!")
     return (

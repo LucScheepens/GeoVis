@@ -23,9 +23,9 @@ def main(
         max_flow_path_length: int
 ):
     algorithms: [LayoutAlgorithm] = [
-        DummyAlgorithm(),
         DynamicRanges(),
-        DirectionalAlg()
+        DirectionalAlg(),
+        DummyAlgorithm(),
     ]
 
     test_dir = ASSET_PATH / test_id
@@ -51,7 +51,7 @@ def main(
 
         print(f"🏃‍ Running algorithms on the generated metro system...")
         for algorithm in algorithms:
-            print(f"- Running algorithm {algorithm.name}...")
+            print(f"- Running algorithm {algorithm.name}...", end=" ")
             (test_dir / algorithm.name).mkdir(exist_ok=True)
 
             # time the algorithm
@@ -67,6 +67,7 @@ def main(
                 "covered_area": output.area_of_overlap,
                 "time_ms": delta_time_ms
             })
+            print("✅")
 
     df = pd.DataFrame(statistics, columns=["algorithm", "iteration", "intersections", "covered_area", "time_ms"])
 
@@ -82,9 +83,9 @@ def main(
 
 if __name__ == "__main__":
     main(
-        "test-1",
+        "test-2x",
         1,
+        15,
         10,
-        10,
-        5
+        7
     )

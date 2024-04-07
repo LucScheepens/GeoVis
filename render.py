@@ -10,31 +10,12 @@ from pydeck.types import String
 
 from utils import Point, LayoutOutput
 UNIT_SCALER = 2
-colors = [
-    (255, 0, 0),     # Red
-    (0, 255, 0),     # Green
-    (0, 0, 255),     # Blue
-    (255, 255, 0),   # Yellow
-    (0, 255, 255),   # Cyan
-    (255, 0, 255),   # Magenta
-    (128, 0, 0),     # Maroon
-    (128, 128, 0),   # Olive
-    (0, 128, 0),     # Dark Green
-    (128, 0, 128),   # Purple
-    (0, 128, 128),   # Teal
-    (0, 0, 128),     # Navy
-    (255, 165, 0),   # Orange
-    (255, 192, 203), # Pink
-    (165, 42, 42),   # Brown
-    (64, 224, 208),  # Turquoise
-    (210, 105, 30),  # Chocolate
-    (220, 20, 60)    # Crimson
-]
+UNITS = 4
 
 
-def flow_path_template(width: int, points: [Point]) -> dict:
-    color = random.choice(colors)
-    colors.remove(color)
+def flow_path_template(width: int, color: tuple, points: [Point]) -> dict:
+    # color = random.choice(colors)
+    # colors.remove(color)
 
     return {
         "name": str(points),
@@ -45,11 +26,9 @@ def flow_path_template(width: int, points: [Point]) -> dict:
 
 
 def render_stations(stations: dict[str, Point]) -> [pdk.Layer]:
-    # for each station create 2 diagonal lines that intersect at the station point and are 10 units long
-    units = 4
     stations = map(lambda x: [
         # station_name, x, y, ld_x, ld_y, rd_x, rd_y
-        x[0], x[1].x * UNIT_SCALER, -x[1].y * UNIT_SCALER, [x[1].x * UNIT_SCALER - units, -x[1].y * UNIT_SCALER - units], [x[1].x * UNIT_SCALER + units, -x[1].y * UNIT_SCALER + units], [x[1].x * UNIT_SCALER + units, -x[1].y * UNIT_SCALER - units], [x[1].x * UNIT_SCALER - units, -x[1].y * UNIT_SCALER + units]
+        x[0], x[1].x * UNIT_SCALER, -x[1].y * UNIT_SCALER, [x[1].x * UNIT_SCALER - UNITS, -x[1].y * UNIT_SCALER - UNITS], [x[1].x * UNIT_SCALER + UNITS, -x[1].y * UNIT_SCALER + UNITS], [x[1].x * UNIT_SCALER + UNITS, -x[1].y * UNIT_SCALER - UNITS], [x[1].x * UNIT_SCALER - UNITS, -x[1].y * UNIT_SCALER + UNITS]
     ], stations.items())
 
 
@@ -57,11 +36,18 @@ def render_stations(stations: dict[str, Point]) -> [pdk.Layer]:
     data = pd.DataFrame(stations, columns=['station_name', 'x', 'y', 'ld_x', 'ld_y', 'rd_x', 'rd_y'])
     return [
         pdk.Layer(
+            type="ScatterplotLayer",
+            data=data,
+            get_position="[x, y]",
+            get_radius=UNITS*1.5,
+            get_fill_color=(255, 242, 204, 255 * 0.25),
+        ),
+        pdk.Layer(
             'PathLayer',
             data,
             get_path='[ld_x, ld_y]',
             get_width=1,
-            get_color=[128, 128, 128],
+            get_color=[128, 128, 128, 128],
             rounded=True,
         ),
         pdk.Layer(
@@ -69,16 +55,16 @@ def render_stations(stations: dict[str, Point]) -> [pdk.Layer]:
             data,
             get_path='[rd_x, rd_y]',
             get_width=1,
-            get_color=[128, 128, 128],
+            get_color=[128, 128, 128, 128],
             rounded=True,
         ),
-        pdk.Layer(
-            'ScatterplotLayer',
-            data,
-            get_position='[x, y]',
-            get_radius=0.5,
-            get_fill_color=[72, 72, 72],
-        ),
+        # pdk.Layer(
+        #     'ScatterplotLayer',
+        #     data,
+        #     get_position='[x, y]',
+        #     get_radius=0.5,
+        #     get_fill_color=[72, 72, 72],
+        # ),
         pdk.Layer(
             'TextLayer',
             data,
@@ -108,7 +94,7 @@ def render_flow_paths(data: LayoutOutput):
     #     "anchorY": 0,
     # }
 
-    flow_paths = map(lambda x: flow_path_template(x[0], x[1]), data.layout)
+    flow_paths = map(lambda x: flow_path_template(x[0], x[2], x[1]), data.layout)
 
     # Create a data frame
     df = pd.DataFrame.from_records(flow_paths)
@@ -169,8 +155,8 @@ def render(data: LayoutOutput, stations: dict[str, Point], output_path: Path = N
             "y": [-root_coordinates.y * UNIT_SCALER],
         }),
         get_position="[x, y]",
-        get_radius=5,
-        get_fill_color=(255, 242, 204, 255 * 0.7),
+        get_radius=UNITS*1.5,
+        get_fill_color=(255, 242, 204, 255 * 0.95),
     )
 
     # Render the flow paths

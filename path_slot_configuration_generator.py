@@ -25,14 +25,14 @@ def generate_configuration(paths: FlowPathsT, slots: [str]) -> FlowPathsWithSlot
     # Variant A: Starting slot is same as ending slot
     # Generate all possible paths from the start to the end for each slot at given station
     result: FlowPathsWithSlotsT = []
-    for frequency, path in paths:
+    for frequency, path, color in paths:
         intermediate_res = []
         for slot in slots:
             path_with_slots = []
             for station in path:
                 path_with_slots.append((station, slot))
 
-            intermediate_res.append((frequency, path_with_slots))
+            intermediate_res.append((frequency, path_with_slots, color))
 
         result.append(intermediate_res)
 

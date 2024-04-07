@@ -7,24 +7,38 @@ import math
 SlotPosition = str
 # SLOTS: list[str] = ["S1", "S2", "S3", "S4", "S5"]
 
-FlowPathsT = list[tuple[int, list[str]]]
+FlowPathsT = list[tuple[int, list[str], tuple[int, int, int]]]  # list of paths and their frequencies and color
 FlowPathsWithSlotsT = list[  # list of paths and their configurations
     list[  # list of all possible configuration flow-path
         tuple[
             int,  # frequency of the path
-            list[tuple[str, SlotPosition]]  # list of stations and their slot positions
+            list[tuple[str, SlotPosition]],  # list of stations and their slot positions
+            tuple[int, int, int]  # color of the path
         ]
     ]
 ]
 
+COLORS = [
+    (14, 181, 174),
+    (64, 70, 202),
+    (246, 133, 18),
+    (222, 61, 130),
+    (126, 132, 250),
+    (113, 224, 106),
+    (20, 122, 243),
+    (115, 38, 211),
+    (232, 198, 0),
+    (203, 92, 0),
+    (0, 143, 93),
+    (188, 233, 48),
+]
 
 
 @dataclasses.dataclass
-
 class Point:
     x: float
     y: float
-    
+
     def angle_with(self, other_point):
         """
         Calculate the angle between two points.
@@ -38,7 +52,6 @@ class Point:
         dx = other_point.x - self.x
         dy = other_point.y - self.y
         return math.atan2(dy, dx)
-
 
 
 @dataclasses.dataclass
@@ -121,17 +134,17 @@ def count_intersections(lines):
     return count
 
 
-def combination_to_coordinates_with_width(combination, flow_paths, slot_coordinates):
+def combination_to_coordinates_with_width_and_color(combination, flow_paths, slot_coordinates):
     """Transforms a combination into a tuple with its coordinates and width"""
     coords_widths = []
-    for width, path_list in flow_paths:
+    for width, path_list, color in flow_paths:
         coords = combination_to_coordinates(combination, slot_coordinates)
         for i, sublist in enumerate(combination):
             path_in_comb = []
             for item in sublist:
                 path_in_comb.append(item[0])
             if path_list == path_in_comb:
-                coords_widths.append((width, coords[i]))
+                coords_widths.append((width, coords[i], color))
 
     return coords_widths
 
@@ -230,10 +243,10 @@ def total_area(rectangles):
 
 def total_overlap_ratio(combination, flow_paths, slot_coordinates):
     """Calculate the ratio of total overlap"""
-    comb_width = combination_to_coordinates_with_width(combination, flow_paths, slot_coordinates)
+    comb_width = combination_to_coordinates_with_width_and_color(combination, flow_paths, slot_coordinates)
     rect_comb = []  # a list of lists with rectangles, representing the lines
     total_overlap = 0
-    for width, line in comb_width:
+    for width, line, color in comb_width:
         rectangles = line_to_rectangles(line, width)
         rect_comb.append(rectangles)
         total_overlap += total_area(rectangles)
@@ -255,3 +268,15 @@ def calculate_frequency_bins(flow_paths: FlowPathsT, bin_count: int) -> list[(ra
         bins.append((range(lower_bound, upper_bound, 1), width_scaler))
 
     return bins
+
+
+def bin_frequencies(flow_paths: FlowPathsT, bin_count: int):
+    bins = calculate_frequency_bins(flow_paths, 3)
+    tmp = []
+    for freq, flow_path, color in flow_paths:
+        width_scaler = next(filter(lambda x: freq in x[0], bins))[1]
+        tmp.append(
+            (width_scaler, flow_path, color)
+        )
+
+    return tmp

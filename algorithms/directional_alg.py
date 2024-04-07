@@ -1,8 +1,8 @@
-from utils import Point, LayoutAlgorithm, FlowPathsT, LayoutOutput, SLOTS, count_intersections, total_overlap_ratio, \
-    combination_to_coordinates
-from path_slot_configuration_generator import generate_configuration
+from utils import Point, LayoutAlgorithm, FlowPathsT, LayoutOutput, count_intersections, total_overlap_ratio, \
+    combination_to_coordinates, combination_to_coordinates_with_width_and_color, bin_frequencies
 import math
 import re
+
 
 def calc_angles(flow_paths, station_coords):
     list_of_angles_pos = {}
@@ -19,6 +19,7 @@ def calc_angles(flow_paths, station_coords):
             list_of_angles_neg[path_key] = angle_between_start_end
             
     return [list_of_angles_pos, list_of_angles_neg]
+
 
 def generate_slots(list_of_angles):
     max_length = 0
@@ -39,8 +40,10 @@ def generate_slots(list_of_angles):
 
     return SLOT_OFFSETS
 
+
 def generate_slots_labels(N):
     return [f"S{i}" for i in range(1, N+1)]
+
 
 def map_path_keys_to_stations(dict_of_paths):
 
@@ -56,8 +59,6 @@ def map_path_keys_to_stations(dict_of_paths):
     return list_of_dict
 
 
-
-
 def convert_to_list_of_tuples(input_data):
     output_data = []
     for item in input_data:
@@ -65,14 +66,6 @@ def convert_to_list_of_tuples(input_data):
         output_data.append(new_item)
     return output_data
 
-def obtain_points_from_keys(combinations, slot_coordinates):
-    list_of_paths = []
-    for path in combinations:
-        list_of_points = []
-        for slot in path:
-            list_of_points.append(slot_coordinates[slot])
-        list_of_paths.append(list_of_points)
-    return list_of_paths
 
 class DirectionalAlg(LayoutAlgorithm):
     @property
@@ -80,6 +73,8 @@ class DirectionalAlg(LayoutAlgorithm):
         return "directional"
     
     def find_optimal_layout(self, flow_paths: FlowPathsT, stations: dict[str, Point]):
+        flow_paths = bin_frequencies(flow_paths, 3)
+
         station_coords = {}
         slot_coordinates = {}
 
@@ -132,12 +127,9 @@ class DirectionalAlg(LayoutAlgorithm):
         best_stations_with_slots = map_path_keys_to_stations(slot_assigned)
         combination_merged = convert_to_list_of_tuples(best_stations_with_slots)
 
-        combinations_points = obtain_points_from_keys(combination_merged,slot_coordinates)
-
         intersections = count_intersections(combination_to_coordinates(combination_merged, slot_coordinates))
         overlap = total_overlap_ratio(combination_merged, flow_paths, slot_coordinates)
-
-        layout = list(map(lambda x: (1, x), combinations_points))
+        layout = combination_to_coordinates_with_width_and_color(combination_merged, flow_paths, slot_coordinates)
 
         return LayoutOutput(
             number_of_intersections=intersections, 

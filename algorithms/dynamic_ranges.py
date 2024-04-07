@@ -1,5 +1,5 @@
 from utils import Point, LayoutAlgorithm, LayoutOutput, count_intersections, \
-    combination_to_coordinates, total_overlap_ratio
+    combination_to_coordinates, total_overlap_ratio, combination_to_coordinates_with_width_and_color, bin_frequencies
 import numpy as np
 import random
 import pandas as pd
@@ -68,7 +68,10 @@ def calculate_intersections(flow_paths, stations):
             path_list.append((station, slot))
         combination_merged.append(path_list)
     intersections = count_intersections(combination_to_coordinates(combination_merged, slot_coordinates))
-    layout = list(map(lambda x: (1, x), combination_to_coordinates(combination_merged, slot_coordinates)))
+
+    # layout = list(map(lambda x: (1, x), combination_to_coordinates(combination_merged, slot_coordinates)))
+    layout = combination_to_coordinates_with_width_and_color(combination_merged, flow_paths, slot_coordinates)
+
     overlap = total_overlap_ratio(combination_merged, flow_paths, slot_coordinates)
 
     return intersections, combination_merged, layout, overlap
@@ -125,6 +128,7 @@ class DynamicRanges(LayoutAlgorithm):
         return 'DynamicRanges'
 
     def find_optimal_layout(self, flow_paths, stations):
+        flow_paths = bin_frequencies(flow_paths, 3)
         intersections_test, paths_dummy, layout, total_overlap = dynamic_ranges(flow_paths, stations)
         return LayoutOutput(
             number_of_intersections=intersections_test,
