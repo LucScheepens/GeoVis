@@ -63,7 +63,7 @@ def render_stations(stations: dict[str, Point]) -> [pdk.Layer]:
             data,
             get_position='[x, y]',
             get_text='station_name',
-            get_size=16,  # Increase text size
+            get_size=24,  # Increase text size
             get_color=[0, 0, 0],
             get_angle=0,
             get_text_anchor=String("middle"),
